@@ -1,0 +1,39 @@
+services:
+  laravel:
+    build: .
+    env_file:
+      - .env
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+    networks:
+      - laravel-net
+  app:
+    image: php:8.0-fpm
+    volumes:
+      - .:/var/www/html
+    networks:
+      - laravel-net
+
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: laravel
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_PASSWORD: password
+      MYSQL_USER: laravel
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - laravel-net
+
+networks:
+  laravel-net:
+    driver: bridge
+
+volumes:
+  mysql_data:
