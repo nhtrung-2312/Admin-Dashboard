@@ -1,39 +1,76 @@
 services:
-  laravel:
-    build: .
-    env_file:
-      - .env
-    ports:
-      - "8080:8080"
-    depends_on:
-      - mysql
-    networks:
-      - laravel-net
+  # PHP Service
   app:
-    image: php:8.0-fpm
+    build: .
+    container_name: laravel_app
+    restart: unless-stopped
+    working_dir: /var/www/html
     volumes:
       - .:/var/www/html
+      - /var/www/html/node_modules
     networks:
-      - laravel-net
+      - app-network
+    depends_on:
+      - mysql
+    user: "1000:1000"
 
+  # Nginx Service
+  nginx:
+    image: nginx:alpine
+    container_name: laravel_nginx
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www/html
+      - ./docker/nginx:/etc/nginx/conf.d
+    networks:
+      - app-network
+    depends_on:
+      - app
+
+  # MySQL Service
   mysql:
     image: mysql:8.0
+    container_name: laravel_mysql
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: laravel
+      MYSQL_DATABASE: MyTestApp
       MYSQL_ROOT_PASSWORD: root
       MYSQL_PASSWORD: password
       MYSQL_USER: laravel
-    ports:
-      - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
     networks:
-      - laravel-net
+      - app-network
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Node Service for React development
+  node:
+    image: node:18-alpine
+    volumes:
+      - .:/var/www/html
+      - node_modules:/var/www/html/node_modules
+    working_dir: /var/www/html
+    command: sh -c "npm install && npm run dev"
+    ports:
+      - "5173:5173"
+    environment:
+      - NODE_ENV=development
+    networks:
+      - app-network
 
 networks:
-  laravel-net:
+  app-network:
     driver: bridge
 
 volumes:
   mysql_data:
+  node_modules:
