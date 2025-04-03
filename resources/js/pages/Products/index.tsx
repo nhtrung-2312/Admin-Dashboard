@@ -5,6 +5,7 @@ import axios from "axios";
 import { toast, ToastContainer, Bounce } from "react-toastify";
 import "react-toastify/ReactToastify.css";
 import TablePagination from "@/components/TablePagination";
+import { router } from "@inertiajs/react";
 
 interface Props {
     auth: {
@@ -61,15 +62,41 @@ export default function Index({ auth }: Props) {
         max: 10000000
     });
 
+    const updateUrlAndFetch = (params: Record<string, any>) => {
+        const newParams = new URLSearchParams(window.location.search);
+
+        Object.entries(params).forEach(([key, value]) => {
+            if (value) {
+                newParams.set(key, String(value));
+            } else {
+                newParams.delete(key);
+            }
+        });
+
+        router.get(window.location.pathname, params, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true
+        });
+    };
+
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
-        updateUrlAndFetch({ page });
+        updateUrlAndFetch({
+            page,
+            per_page: perPage,
+            ...filters
+        });
     };
 
     const handlePerPageChange = (newPerPage: number) => {
         setPerPage(newPerPage);
         setCurrentPage(1);
-        updateUrlAndFetch({ page: 1, per_page: newPerPage });
+        updateUrlAndFetch({
+            page: 1,
+            per_page: newPerPage,
+            ...filters
+        });
     };
 
     const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -84,28 +111,9 @@ export default function Index({ auth }: Props) {
         setCurrentPage(1);
         updateUrlAndFetch({
             page: 1,
+            per_page: perPage,
             ...filters
         });
-    };
-
-    const handlePriceRangeChange = (type: 'from' | 'to', value: number) => {
-        const numValue = Number(value);
-
-        if (type === 'from') {
-            if (numValue <= Number(filters.priceTo || priceRange.max)) {
-                setFilters(prev => ({
-                    ...prev,
-                    priceFrom: String(numValue)
-                }));
-            }
-        } else {
-            if (numValue >= Number(filters.priceFrom || 0)) {
-                setFilters(prev => ({
-                    ...prev,
-                    priceTo: String(numValue)
-                }));
-            }
-        }
     };
 
     const handleReset = () => {
@@ -123,34 +131,12 @@ export default function Index({ auth }: Props) {
         });
     };
 
-    const setSearchParams = (params: Record<string, any>) => {
-        const newParams = new URLSearchParams(searchParams);
-
-        Object.entries(params).forEach(([key, value]) => {
-            newParams.set(key, String(value));
-        });
-    };
-
-    const updateUrlAndFetch = (params: Record<string, any>) => {
-        const newParams = new URLSearchParams(searchParams);
-
-        Object.entries(params).forEach(([key, value]) => {
-            if (value) {
-                newParams.set(key, String(value));
-            } else {
-                newParams.delete(key);
-            }
-        });
-
-        setSearchParams(newParams);
-    };
-
-    const fetchProducts = async (page: number = 1) => {
+    const fetchProducts = async () => {
         setIsLoading(true);
         try {
             const response = await axios.get('/api/products', {
                 params: {
-                    page,
+                    page: currentPage,
                     per_page: perPage,
                     ...filters
                 }
@@ -165,32 +151,7 @@ export default function Index({ auth }: Props) {
     };
 
     useEffect(() => {
-        fetchProducts(currentPage);
-    }, []);
-
-    useEffect(() => {
-        const page = Number(searchParams.get('page')) || 1;
-        const per_page = Number(searchParams.get('per_page')) || 10;
-        const name = searchParams.get('name') || '';
-        const status = searchParams.get('status') || '';
-        const priceFrom = searchParams.get('priceFrom') || '';
-        const priceTo = searchParams.get('priceTo') || '';
-
-        if (page !== currentPage) setCurrentPage(page);
-        if (per_page !== perPage) setPerPage(per_page);
-        if (name !== filters.name || status !== filters.status ||
-            priceFrom !== filters.priceFrom || priceTo !== filters.priceTo) {
-            setFilters({
-                name,
-                status,
-                priceFrom,
-                priceTo
-            });
-        }
-    }, [searchParams]);
-
-    useEffect(() => {
-        fetchProducts(currentPage);
+        fetchProducts();
     }, [currentPage, perPage, filters]);
 
     return (
@@ -295,7 +256,7 @@ export default function Index({ auth }: Props) {
                                     Đặt lại
                                 </button>
                                 <button
-                                    onClick={() => fetchProducts(currentPage)}
+                                    onClick={() => fetchProducts()}
                                     className="bg-blue-500 text-white rounded-md px-4 py-2 hover:bg-blue-600"
                                 >
                                     Tìm kiếm
