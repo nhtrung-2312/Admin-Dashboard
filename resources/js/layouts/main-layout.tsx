@@ -45,7 +45,12 @@ export default function MainLayout({ children, user }: MainLayoutProps) {
                         <div className="flex items-center">
                             <div className="sm:ml-6 sm:flex sm:items-center">
                                 <div className="flex items-center space-x-4">
-                                    <span className="text-sm text-gray-700">{user.name}</span>
+                                    <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
+                                        <span className="text-sm font-medium text-gray-600">
+                                            {user.name.charAt(0).toUpperCase()}
+                                        </span>
+                                    </div>
+                                    <span className="text-sm text-gray-700">Hello, {user.name}</span>
                                     <Link
                                         href={route('logout')}
                                         method="post"

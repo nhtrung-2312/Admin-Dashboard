@@ -12,19 +12,16 @@ class MstUserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Tạo admin user nếu chưa tồn tại
-        if (!MstUser::where('email', 'admin@example.com')->exists()) {
-            MstUser::create([
-                'name' => 'Admin',
-                'email' => 'admin@example.com',
-                'password' => bcrypt('password'),
-                'group_role' => 'admin',
-                'is_active' => true,
-                'is_delete' => false,
-            ]);
-        }
-
-        // Tạo 100 user ngẫu nhiên
+        MstUser::create([
+            'name' => 'Admin',
+            'email' => 'admin@gmail.com',
+            'password' => bcrypt('123456'),
+            'is_active' => 1,
+            'is_delete' => 0,
+            'group_role' => 'admin',
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
         MstUser::factory(100)->create();
     }
 }

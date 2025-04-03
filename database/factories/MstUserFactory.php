@@ -16,10 +16,9 @@ class MstUserFactory extends Factory
         return [
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
-            'password' => Hash::make('password'),
-            'remember_token' => Str::random(10),
-            'group_role' => fake()->randomElement(['admin', 'user']),
-            'is_active' => fake()->boolean(80),
+            'password' => Hash::make(fake()->password()),
+            'group_role' => fake()->randomElement(['admin', 'user', 'manager']),
+            'is_active' => fake()->boolean(),
             'is_delete' => false,
             'last_login_at' => fake()->dateTimeBetween('-1 year', 'now'),
         ];
