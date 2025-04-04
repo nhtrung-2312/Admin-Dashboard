@@ -16,12 +16,14 @@ class ProductFactory extends Factory
      */
     public function definition(): array
     {
+        $word = fake()->unique()->word();
         return [
-            'name' => fake()->unique()->word(),
+            'id' => strtoupper(substr($word, 0, 1)) . fake()->numerify('#########'),
+            'name' => $word,
             'description' => fake()->sentence(),
             'price' => fake()->numberBetween(50000, 10000000),
             'quantity' => fake()->numberBetween(0, 100),
-            'image_url' => fake()->imageUrl(640, 480, 'products', true),
+            'image_url' => null,
             'status' => fake()->numberBetween(0, 2),
         ];
     }

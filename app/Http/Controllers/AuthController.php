@@ -34,7 +34,7 @@ class AuthController extends Controller
             $user = Auth::user();
 
             //If account is online, cant login
-            if (!$user->is_active) {
+            if ($user->is_active) {
                 Auth::logout();
                 return back()->withErrors([
                     'email' => 'Tài khoản của bạn đang hoạt động.',
@@ -46,6 +46,18 @@ class AuthController extends Controller
                 Auth::logout();
                 return back()->withErrors([
                     'email' => 'Tài khoản không tồn tại.',
+                ]);
+            }
+
+            // Gán role cho user dựa trên group_role
+            if ($user->group_role === 'admin') {
+                $user->assignRole('admin');
+            } elseif ($user->group_role === 'manager') {
+                $user->assignRole('manager');
+            } else {
+                Auth::logout();
+                return back()->withErrors([
+                    'email' => 'Bạn không có quyền truy cập.',
                 ]);
             }
 

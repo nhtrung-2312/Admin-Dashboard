@@ -34,9 +34,15 @@ export default function Pagination({ links, from, to, total }: PaginationProps) 
             <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
                 <div>
                     <p className="text-sm text-gray-700">
-                        Hiển thị từ <span className="font-medium">{from}</span> đến{' '}
-                        <span className="font-medium">{to}</span> trong tổng số{' '}
-                        <span className="font-medium">{total}</span> kết quả
+                        <span className="hidden sm:inline">Hiển thị từ </span>
+                        <span className="font-medium">{from}</span>
+                        <span className="hidden sm:inline"> đến </span>
+                        <span className="sm:hidden">~</span>
+                        <span className="font-medium">{to}</span>
+                        <span className="hidden sm:inline"> trong tổng số </span>
+                        <span className="sm:hidden">/</span>
+                        <span className="font-medium">{total}</span>
+                        <span className="hidden sm:inline"> kết quả</span>
                     </p>
                 </div>
                 <div>

@@ -61,8 +61,15 @@ export default function Index({ auth }: Props) {
     const [isCreating, setIsCreating] = useState<boolean>(false);
     const [isDeleting, setIsDeleting] = useState<boolean>(false);
     const [searchTerm, setSearchTerm] = useState<string>(searchParams.get('search') || '');
+    const [tempSearchTerm, setTempSearchTerm] = useState<string>(searchParams.get('search') || '');
     const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
     const [editingUser, setEditingUser] = useState<UserData | null>(null);
+    const [tempStatusFilter, setTempStatusFilter] = useState<string>(searchParams.get('status') || '');
+    const [tempRoleFilter, setTempRoleFilter] = useState<string>(searchParams.get('role') || '');
+
+    const canEdit = auth.user.roles.includes('admin');
+    const canDelete = auth.user.roles.includes('admin');
+    const canCreate = auth.user.roles.includes('admin');
 
     const updateUrlAndFetch = (params: Record<string, any>) => {
         const newParams = new URLSearchParams(window.location.search);
@@ -104,27 +111,11 @@ export default function Index({ auth }: Props) {
     };
 
     const handleStatusChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        const newStatus = event.target.value;
-        setStatusFilter(newStatus);
-        setCurrentPage(1);
-        updateUrlAndFetch({
-            page: 1,
-            per_page: perPage,
-            status: newStatus,
-            role: roleFilter
-        });
+        setTempStatusFilter(event.target.value);
     };
 
     const handleRoleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        const newRole = event.target.value;
-        setRoleFilter(newRole);
-        setCurrentPage(1);
-        updateUrlAndFetch({
-            page: 1,
-            per_page: perPage,
-            status: statusFilter,
-            role: newRole
-        });
+        setTempRoleFilter(event.target.value);
     };
 
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -225,29 +216,31 @@ export default function Index({ auth }: Props) {
         setStatusFilter('');
         setRoleFilter('');
         setSearchTerm('');
+        setTempStatusFilter('');
+        setTempRoleFilter('');
+        setTempSearchTerm('');
         updateUrlAndFetch({
             page: 1,
             per_page: 10
         });
     };
 
-    const handleSearch = useMemo(() => {
-        return debounce((value: string) => {
-            updateUrlAndFetch({
-                page: 1,
-                per_page: perPage,
-                status: statusFilter,
-                role: roleFilter,
-                search: value
-            });
-        }, 500);
-    }, []);
-
-    const onSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const value = event.target.value;
-        setSearchTerm(value);
+    const handleSearch = () => {
+        setStatusFilter(tempStatusFilter);
+        setRoleFilter(tempRoleFilter);
+        setSearchTerm(tempSearchTerm);
         setCurrentPage(1);
-        handleSearch(value);
+        updateUrlAndFetch({
+            page: 1,
+            per_page: perPage,
+            status: tempStatusFilter,
+            role: tempRoleFilter,
+            search: tempSearchTerm
+        });
+    };
+
+    const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setTempSearchTerm(event.target.value);
     };
 
     const handleEdit = (user: UserData) => {
@@ -336,7 +329,7 @@ export default function Index({ auth }: Props) {
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900">
-                            <section>
+                            <section hidden={!canCreate}>
                                 <div className="flex justify-between items-center mb-6">
                                     <h2 className="text-2xl font-semibold">Thêm người dùng mới</h2>
                                 </div>
@@ -352,6 +345,7 @@ export default function Index({ auth }: Props) {
                                             className={`w-full px-3 py-2 border rounded-md ${
                                                 errors.name ? 'border-red-500' : 'border-gray-300'
                                             }`}
+                                            disabled={!canCreate}
                                         />
                                         {errors.name && (
                                             <p className="mt-1 text-sm text-red-500">
@@ -369,6 +363,7 @@ export default function Index({ auth }: Props) {
                                             className={`w-full px-3 py-2 border rounded-md ${
                                                 errors.email ? 'border-red-500' : 'border-gray-300'
                                             }`}
+                                            disabled={!canCreate}
                                         />
                                         {errors.email && (
                                             <p className="mt-1 text-sm text-red-500">{errors.email}</p>
@@ -383,6 +378,7 @@ export default function Index({ auth }: Props) {
                                             className={`w-full px-3 py-2 border rounded-md ${
                                                 errors.is_active ? 'border-red-500' : 'border-gray-300'
                                             }`}
+                                            disabled={!canCreate}
                                         >
                                             <option value="1">Hoạt động</option>
                                             <option value="0">Không hoạt động</option>
@@ -399,7 +395,8 @@ export default function Index({ auth }: Props) {
                                             onChange={handleInputChange}
                                             className={`w-full px-3 py-2 border rounded-md ${
                                                 errors.group_role ? 'border-red-500' : 'border-gray-300'
-                                            }`}
+                                                }`}
+                                            disabled={!canCreate}
                                         >
                                             <option value="user">User</option>
                                             <option value="admin">Admin</option>
@@ -421,51 +418,78 @@ export default function Index({ auth }: Props) {
                             </section>
 
                             <section className="border-t border-gray-200 pt-8">
-                                <div className="flex justify-between items-center mb-6">
+
+                                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                                     <h2 className="text-2xl font-semibold">Danh sách người dùng</h2>
-                                    <Button
-                                        onClick={handleReset}
-                                        className="bg-blue-500 hover:bg-blue-600 text-white"
-                                        disabled={isLoading}
-                                    >
-                                        {isLoading ? 'Đang tải...' : 'Làm mới'}
-                                    </Button>
                                 </div>
-                                <div className="flex justify-between items-center mb-6">
-                                    <div className="flex items-center gap-4">
-                                        <div className="flex items-center gap-2">
-                                            <input
-                                                type="text"
-                                                placeholder="Tìm kiếm theo tên, email..."
-                                                value={searchTerm}
-                                                onChange={onSearchChange}
-                                                className="px-3 py-2 border border-gray-300 rounded-md w-64"
-                                            />
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <label className="text-sm text-gray-700">Trạng thái:</label>
-                                            <select
-                                                className="px-3 py-2 border border-gray-300 rounded-md"
-                                                value={statusFilter}
-                                                onChange={handleStatusChange}
-                                            >
-                                                <option value="">Tất cả</option>
-                                                <option value="active">Đang hoạt động</option>
-                                                <option value="inactive">Không hoạt động</option>
-                                            </select>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <label className="text-sm text-gray-700">Chức vụ:</label>
-                                            <select
-                                                className="px-3 py-2 border border-gray-300 rounded-md"
-                                                value={roleFilter}
-                                                onChange={handleRoleChange}
-                                            >
-                                                <option value="">Tất cả</option>
-                                                <option value="admin">Admin</option>
-                                                <option value="user">User</option>
-                                            </select>
-                                        </div>
+                                {meta && (
+                                    <div className="mb-4">
+                                        <TablePagination
+                                            links={meta.links}
+                                            from={meta.from}
+                                            to={meta.to}
+                                            total={meta.total}
+                                            perPage={perPage}
+                                            currentPage={currentPage}
+                                            onPerPageChange={handlePerPageChange}
+                                            onPageChange={handlePageChange}
+                                        />
+                                    </div>
+                                )}
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                                    <div className="md:col-span-2 lg:col-span-1">
+                                        <label className="block text-sm text-gray-700 mb-1">Tìm kiếm:</label>
+                                        <input
+                                            type="text"
+                                            placeholder="Tìm kiếm theo tên, email..."
+                                            value={tempSearchTerm}
+                                            onChange={handleSearchChange}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm text-gray-700 mb-1">Trạng thái:</label>
+                                        <select
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                            value={tempStatusFilter}
+                                            onChange={handleStatusChange}
+                                        >
+                                            <option value="">Tất cả</option>
+                                            <option value="active">Đang hoạt động</option>
+                                            <option value="inactive">Không hoạt động</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm text-gray-700 mb-1">Chức vụ:</label>
+                                        <select
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                            value={tempRoleFilter}
+                                            onChange={handleRoleChange}
+                                        >
+                                            <option value="">Tất cả</option>
+                                            <option value="admin">Admin</option>
+                                            <option value="user">User</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col sm:flex-row lg:justify-end md:justify-end justify-center gap-4 mb-6">
+                                    <div className="flex justify-end gap-2 mb-6">
+                                        <Button
+                                            onClick={handleReset}
+                                            className="bg-gray-500 hover:bg-gray-600 text-white"
+                                            disabled={isLoading}
+                                        >
+                                            {isLoading ? 'Đang tải...' : 'Làm mới'}
+                                        </Button>
+                                        <Button
+                                            onClick={handleSearch}
+                                            className="bg-blue-500 hover:bg-blue-600 text-white"
+                                            disabled={isLoading}
+                                        >
+                                            Tìm kiếm
+                                        </Button>
                                     </div>
                                 </div>
 
@@ -521,6 +545,7 @@ export default function Index({ auth }: Props) {
                                                                         variant="secondary"
                                                                         className="flex items-center gap-1"
                                                                         onClick={() => handleEdit(user)}
+                                                                        disabled={!canEdit}
                                                                     >
                                                                         Sửa
                                                                     </Button>
@@ -529,7 +554,7 @@ export default function Index({ auth }: Props) {
                                                                         variant="destructive"
                                                                         className="flex items-center gap-1"
                                                                         onClick={() => handleDelete(user.id)}
-                                                                        disabled={isDeleting}
+                                                                        disabled={!canDelete || isDeleting}
                                                                     >
                                                                         {isDeleting ? 'Đang xóa...' : 'Xóa'}
                                                                     </Button>
@@ -540,19 +565,6 @@ export default function Index({ auth }: Props) {
                                                 </tbody>
                                             </table>
                                         </div>
-
-                                        {meta && (
-                                            <TablePagination
-                                                links={meta.links}
-                                                from={meta.from}
-                                                to={meta.to}
-                                                total={meta.total}
-                                                perPage={perPage}
-                                                currentPage={currentPage}
-                                                onPerPageChange={handlePerPageChange}
-                                                onPageChange={handlePageChange}
-                                            />
-                                        )}
                                     </>
                                 )}
                             </section>

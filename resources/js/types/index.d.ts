@@ -40,5 +40,9 @@ export interface User {
     created_at: string;
     updated_at: string;
     group_role: string;
-    [key: string]: unknown; // This allows for additional properties...
+    permissions: string[];
+    is_active: boolean;
+    is_delete: boolean;
+    last_login_at: string | null;
+    roles: string[];
 }

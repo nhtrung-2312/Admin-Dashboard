@@ -13,10 +13,11 @@ class MstUserFactory extends Factory
 
     public function definition(): array
     {
+        $email = fake()->unique()->safeEmail();
         return [
             'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
-            'password' => Hash::make(fake()->password()),
+            'email' => $email,
+            'password' => Hash::make(Str::before($email, '@')),
             'group_role' => fake()->randomElement(['admin', 'user', 'manager']),
             'is_active' => fake()->boolean(),
             'is_delete' => false,
