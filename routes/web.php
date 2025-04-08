@@ -47,27 +47,34 @@ Route::prefix('api')->name('api.')->middleware(['auth'])->group(function () {
 // Inertia Routes
 Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
-    
-    Route::prefix('products')->middleware(['auth', 'check.role:admin,manager'])->group(function () {
+    Route::get('/permission', [PermissionController::class, 'index'])->name('permission');
+
+    Route::prefix('products')->group(function () {
         Route::get('/', [ProductController::class, 'index'])->name('products');
-        
-        Route::middleware(['check.role:admin,manager'])->group(function () {
-            Route::get('/create', [ProductController::class, 'create'])->name('products.create');
-            Route::post('/', [ProductController::class, 'store'])->name('products.store');
-            Route::get('/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
-            Route::put('/{product}', [ProductController::class, 'update'])->name('products.update');
-        });
-        
-        Route::middleware(['check.role:admin'])->group(function () {
-            Route::delete('/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
-        });
+        Route::get('/create', [ProductController::class, 'create'])->name('products.create');
     });
+
 });
 
 // Auth Routes
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'login'])->name('login');
     Route::post('/login', [AuthController::class, 'authenticate'])->name('login.authenticate');
+});
+
+Route::get('/api/languages', function () {
+    return response()->json([
+        'current' => app()->getLocale(),
+        'available' => config('app.available_locales')
+    ]);
+});
+
+Route::get('/lang/{locale?}', function ($locale = null) {
+    if ($locale && in_array($locale, config('app.available_locales'))) {
+        app()->setLocale($locale);
+        session()->put('locale', $locale);
+    }
+    return redirect()->back();
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');

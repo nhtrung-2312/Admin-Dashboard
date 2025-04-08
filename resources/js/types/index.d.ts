@@ -46,3 +46,13 @@ export interface User {
     last_login_at: string | null;
     roles: string[];
 }
+
+export interface Language {
+    name: string;
+    code: string;
+}
+
+export interface ApiLanguageResponse {
+    current: string;
+    available: Record<string, Language>;
+}

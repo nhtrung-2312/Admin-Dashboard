@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Http\Requests\ProductRequest;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class ProductApi extends Controller
 {
@@ -189,8 +190,11 @@ class ProductApi extends Controller
             ], 200);
         } catch (\Exception $e) {
             //Step 4: Return error response
+            Log::error('Lỗi khi xóa sản phẩm: ' . $e->getMessage());
+
             return response()->json([
-                'message' => 'Lỗi khi xóa sản phẩm'
+                'message' => 'Có lỗi xảy ra khi xóa sản phẩm',
+                'error' => $e->getMessage()
             ], 500);
         }
     }

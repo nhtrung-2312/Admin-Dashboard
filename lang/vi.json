@@ -1,0 +1,25 @@
+{
+    "login": {
+        "title": "Trang đăng nhập",
+        "email": "Email",
+        "password": "Mật khẩu",
+        "remember": "Ghi nhớ đăng nhập",
+        "login": "Đăng nhập"
+    },
+    "validation": {
+        "required": ":attribute không được bỏ trống.",
+        "email": ":attribute không hợp lệ."
+    },
+    "auth": {
+        "fail": "Thông tin đăng nhập không chính xác",
+        "success": "Đăng nhập thành công!",
+        "deleted_account": "Tài khoản đã bị vô hiệu hoá."
+    },
+    "system": {
+        "fail": "Có lỗi xảy ra, vui lòng thử lại."
+    },
+    "attributes": {
+        "email": "Email",
+        "password": "Mật khẩu"
+    }
+}
