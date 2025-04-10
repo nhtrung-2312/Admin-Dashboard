@@ -2,14 +2,34 @@ import { Link } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { User } from '@/types';
 import { useState } from 'react';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
+import axios from 'axios';
 
 interface MainLayoutProps {
     children: React.ReactNode;
     user: User;
+    translations: Record<string, any>;
 }
 
-export default function MainLayout({ children, user }: MainLayoutProps) {
+export default function MainLayout({ children, user, translations }: MainLayoutProps) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    const handleLogout = async () => {
+        try {
+            const response = await axios.post('/logout', null, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (response.data.status && response.data.redirect) {
+                window.location.href = response.data.redirect;
+            }
+        } catch (error: any) {
+            console.error(translations.auth.error);
+        }
+    };
 
     return (
         <div className="min-h-screen bg-gray-100">
@@ -19,7 +39,7 @@ export default function MainLayout({ children, user }: MainLayoutProps) {
                         <div className="flex">
                             <div className="flex-shrink-0 flex items-center">
                                 <Link href="/">
-                                    <span className="text-xl font-bold text-gray-900">Dashboard</span>
+                                    <span className="text-xl font-bold text-gray-900">{translations.dashboard}</span>
                                 </Link>
                             </div>
                             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
@@ -31,7 +51,7 @@ export default function MainLayout({ children, user }: MainLayoutProps) {
                                             : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                                     }`}
                                 >
-                                    User
+                                    {translations.user}
                                 </Link>
                                 <Link
                                     href={route('products')}
@@ -41,27 +61,26 @@ export default function MainLayout({ children, user }: MainLayoutProps) {
                                             : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                                     }`}
                                 >
-                                    Sản phẩm
+                                    {translations.products}
                                 </Link>
                             </div>
                         </div>
                         <div className="hidden sm:flex sm:items-center">
                             <div className="sm:ml-6 sm:flex sm:items-center">
                                 <div className="flex items-center space-x-4">
+                                    <LanguageSwitcher />
                                     <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
                                         <span className="text-sm font-medium text-gray-600">
                                             {user.name.charAt(0).toUpperCase()}
                                         </span>
                                     </div>
-                                    <span className="text-sm text-gray-700">Hello, {user.name}</span>
-                                    <Link
-                                        href={route('logout')}
-                                        method="post"
-                                        as="button"
+                                    <span className="text-sm text-gray-700">{translations.hello}, {user.name}</span>
+                                    <button
+                                        onClick={handleLogout}
                                         className="text-sm text-red-600 hover:text-red-800"
                                     >
-                                        Đăng xuất
-                                    </Link>
+                                        {translations.logout}
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -104,7 +123,7 @@ export default function MainLayout({ children, user }: MainLayoutProps) {
                                     : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800'
                             }`}
                         >
-                            User
+                            {translations.user}
                         </Link>
                         <Link
                             href={route('products')}
@@ -114,7 +133,7 @@ export default function MainLayout({ children, user }: MainLayoutProps) {
                                     : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800'
                             }`}
                         >
-                            Sản phẩm
+                            {translations.products}
                         </Link>
                     </div>
                     <div className="pt-4 pb-3 border-t border-gray-200">
@@ -131,14 +150,15 @@ export default function MainLayout({ children, user }: MainLayoutProps) {
                             </div>
                         </div>
                         <div className="mt-3 space-y-1">
-                            <Link
-                                href={route('logout')}
-                                method="post"
-                                as="button"
+                            <div className="px-4 py-2">
+                                <LanguageSwitcher />
+                            </div>
+                            <button
+                                onClick={handleLogout}
                                 className="block w-full text-left px-4 py-2 text-base font-medium text-red-600 hover:bg-gray-100 hover:text-red-800"
                             >
-                                Đăng xuất
-                            </Link>
+                                {translations.logout}
+                            </button>
                         </div>
                     </div>
                 </div>

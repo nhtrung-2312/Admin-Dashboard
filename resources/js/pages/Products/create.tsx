@@ -10,6 +10,7 @@ interface Props {
     auth: {
         user: User;
     };
+    translations: Record<string, any>;
 }
 
 interface FormErrors {
@@ -21,7 +22,7 @@ interface FormErrors {
     image?: string[];
 }
 
-export default function Create({ auth }: Props) {
+export default function Create({ auth, translations }: Props) {
     const [formData, setFormData] = useState({
         name: '',
         description: '',
@@ -77,12 +78,7 @@ export default function Create({ auth }: Props) {
                 [name]: formattedValue
             }));
             
-            if (!validatePrice(numericValue)) {
-                setErrors(prev => ({
-                    ...prev,
-                    price: ['Giá phải là số dương']
-                }));
-            } else {
+            if (errors.price) {
                 setErrors(prev => ({
                     ...prev,
                     price: undefined
@@ -98,12 +94,7 @@ export default function Create({ auth }: Props) {
 
             const numericValue = parseInt(value.replace(/^0+/, '')) || 0;
             
-            if (!validateQuantity(numericValue.toString())) {
-                setErrors(prev => ({
-                    ...prev,
-                    quantity: ['Số lượng phải là số dương']
-                }));
-            } else {
+            if (errors.quantity) {
                 setErrors(prev => ({
                     ...prev,
                     quantity: undefined
@@ -119,6 +110,13 @@ export default function Create({ auth }: Props) {
                 ...prev,
                 [name]: value
             }));
+
+            if (errors[name as keyof FormErrors]) {
+                setErrors(prev => ({
+                    ...prev,
+                    [name]: undefined
+                }));
+            }
         }
     };
 
@@ -128,7 +126,7 @@ export default function Create({ auth }: Props) {
             if (file.size > 2 * 1024 * 1024) {
                 setErrors(prev => ({
                     ...prev,
-                    image: ['Kích thước file không được vượt quá 2MB']
+                    image: [translations.product.create_form_placeholder_image_subtitle]
                 }));
                 return;
             }
@@ -137,6 +135,7 @@ export default function Create({ auth }: Props) {
                 image: file
             }));
             setImagePreview(URL.createObjectURL(file));
+            
             if (errors.image) {
                 setErrors(prev => ({
                     ...prev,
@@ -150,24 +149,6 @@ export default function Create({ auth }: Props) {
         e.preventDefault();
         setIsSubmitting(true);
         setErrors({});
-
-        if (!validatePrice(formData.price)) {
-            setErrors(prev => ({
-                ...prev,
-                price: ['Giá phải là số dương']
-            }));
-            setIsSubmitting(false);
-            return;
-        }
-
-        if (!validateQuantity(formData.quantity.toString())) {
-            setErrors(prev => ({
-                ...prev,
-                quantity: ['Số lượng phải là số dương']
-            }));
-            setIsSubmitting(false);
-            return;
-        }
 
         const formDataToSend = new FormData();
         formDataToSend.append('name', formData.name);
@@ -187,24 +168,17 @@ export default function Create({ auth }: Props) {
             });
 
             if (response.status === 200) {
-                toast.success('Thêm sản phẩm thành công', {
+                toast.success(translations.product.system_create_success, {
                     onClose: () => {
-                        router.get('/products/create');
+                        router.get('/products');
                     }
                 });
-            } else {
-                toast.error(response.data.message || 'Có lỗi xảy ra khi thêm sản phẩm');
             }
         } catch (error) {
-            if (axios.isAxiosError(error)) {
-                if (error.response?.data?.errors) {
-                    setErrors(error.response.data.errors);
-                    toast.error('Vui lòng kiểm tra lại thông tin');
-                } else {
-                    toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi thêm sản phẩm');
-                }
+            if (axios.isAxiosError(error) && error.response?.data?.errors) {
+                setErrors(error.response.data.errors);
             } else {
-                toast.error('Đã xảy ra lỗi không xác định');
+                toast.error(translations.product.system_create_error);
             }
         } finally {
             setIsSubmitting(false);
@@ -212,7 +186,7 @@ export default function Create({ auth }: Props) {
     };
 
     return (
-        <MainLayout user={auth.user}>
+        <MainLayout user={auth.user} translations={translations.nav}>
             <ToastContainer
                 position="top-right"
                 autoClose={1000}
@@ -231,7 +205,7 @@ export default function Create({ auth }: Props) {
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-8 text-gray-900">
                             <div className="flex justify-between items-center mb-8">
-                                <h1 className="text-2xl font-bold text-gray-800">Thêm sản phẩm mới</h1>
+                                <h1 className="text-2xl font-bold text-gray-800">{translations.product.create_title}</h1>
                                 <button
                                     onClick={() => router.get('/products')}
                                     className="flex items-center gap-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-200 transition-colors"
@@ -239,7 +213,7 @@ export default function Create({ auth }: Props) {
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                                     </svg>
-                                    Quay lại
+                                    {translations.product.create_button_back}
                                 </button>
                             </div>
 
@@ -247,7 +221,7 @@ export default function Create({ auth }: Props) {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div className="space-y-6">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">Tên sản phẩm</label>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">{translations.product.create_form_name}</label>
                                             <input
                                                 type="text"
                                                 name="name"
@@ -256,8 +230,7 @@ export default function Create({ auth }: Props) {
                                                 className={`w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
                                                     errors.name ? 'border-red-500' : 'border-gray-300'
                                                 }`}
-                                                placeholder="Nhập tên sản phẩm"
-                                                required
+                                                placeholder={translations.product.create_form_placeholder_name}
                                             />
                                             {errors.name && (
                                                 <p className="mt-1 text-sm text-red-600">{errors.name[0]}</p>
@@ -265,7 +238,7 @@ export default function Create({ auth }: Props) {
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">Mô tả</label>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">{translations.product.create_form_desc}</label>
                                             <textarea
                                                 name="description"
                                                 value={formData.description}
@@ -274,8 +247,7 @@ export default function Create({ auth }: Props) {
                                                 className={`w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
                                                     errors.description ? 'border-red-500' : 'border-gray-300'
                                                 }`}
-                                                placeholder="Nhập mô tả sản phẩm"
-                                                required
+                                                placeholder={translations.product.create_form_placeholder_desc}
                                             />
                                             {errors.description && (
                                                 <p className="mt-1 text-sm text-red-600">{errors.description[0]}</p>
@@ -283,7 +255,7 @@ export default function Create({ auth }: Props) {
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">Giá (VNĐ)</label>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">{translations.product.create_form_price}</label>
                                             <input
                                                 type="text"
                                                 name="price"
@@ -292,8 +264,7 @@ export default function Create({ auth }: Props) {
                                                 className={`w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
                                                     errors.price ? 'border-red-500' : 'border-gray-300'
                                                 }`}
-                                                placeholder="Nhập giá sản phẩm"
-                                                required
+                                                placeholder={translations.product.create_form_placeholder_price}
                                             />
                                             {errors.price && (
                                                 <p className="mt-1 text-sm text-red-600">{errors.price[0]}</p>
@@ -301,7 +272,7 @@ export default function Create({ auth }: Props) {
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">Số lượng</label>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">{translations.product.create_form_quantity}</label>
                                             <input
                                                 type="text"
                                                 name="quantity"
@@ -311,7 +282,6 @@ export default function Create({ auth }: Props) {
                                                     errors.quantity ? 'border-red-500' : 'border-gray-300'
                                                 }`}
                                                 placeholder="Nhập số lượng đang có"
-                                                required
                                             />
                                             {errors.quantity && (
                                                 <p className="mt-1 text-sm text-red-600">{errors.quantity[0]}</p>
@@ -319,7 +289,7 @@ export default function Create({ auth }: Props) {
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">Trạng thái</label>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">{translations.product.create_form_status}</label>
                                             <select
                                                 name="status"
                                                 value={formData.status}
@@ -328,19 +298,19 @@ export default function Create({ auth }: Props) {
                                                     errors.status ? 'border-red-500' : 'border-gray-300'
                                                 }`}
                                             >
-                                                <option value="1">Đang bán</option>
-                                                <option value="0">Ngừng bán</option>
-                                                <option value="2">Hết hàng</option>
+                                                <option value="1">{translations.product.create_form_placeholder_status_selling}</option>
+                                                <option value="0">{translations.product.create_form_placeholder_status_stop}</option>
+                                                <option value="2">{translations.product.create_form_placeholder_status_out}</option>
                                             </select>
                                             {errors.status && (
-                                                <p className="mt-1 text-sm text-red-600">{errors.status}</p>
+                                                <p className="mt-1 text-sm text-red-600">{errors.status[0]}</p>
                                             )}
                                         </div>
                                     </div>
 
                                     <div className="space-y-6">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">Hình ảnh</label>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">{translations.product.create_form_image}</label>
                                             <div className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 rounded-md transition-colors ${
                                                 errors.image ? 'border-red-500' : 'border-gray-300 border-dashed hover:border-blue-500'
                                             }`}>
@@ -376,9 +346,9 @@ export default function Create({ auth }: Props) {
                                                             <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                                                                 <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                                             </svg>
-                                                            <div className="flex text-sm text-gray-600">
+                                                            <div className="flex text-sm text-gray-600 items-center justify-center">
                                                                 <label className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none">
-                                                                    <span>Tải lên hình ảnh</span>
+                                                                    <p>{translations.product.create_form_placeholder_image_title}</p>
                                                                     <input
                                                                         type="file"
                                                                         onChange={handleImageChange}
@@ -386,9 +356,8 @@ export default function Create({ auth }: Props) {
                                                                         className="sr-only"
                                                                     />
                                                                 </label>
-                                                                <p className="pl-1">hoặc kéo thả</p>
                                                             </div>
-                                                            <p className="text-xs text-gray-500">PNG, JPG, GIF tối đa 2MB</p>
+                                                            <p className="text-xs text-gray-500">{translations.product.create_form_placeholder_image_subtitle}</p>
                                                         </>
                                                     )}
                                                 </div>
@@ -414,14 +383,14 @@ export default function Create({ auth }: Props) {
                                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                                 </svg>
-                                                Đang xử lý...
+                                                {translations.product.table_isloading}
                                             </>
                                         ) : (
                                             <>
                                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                                                 </svg>
-                                                Thêm sản phẩm
+                                                {translations.product.create_button_submit}
                                             </>
                                         )}
                                     </button>

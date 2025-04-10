@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'previous' => '&laquo; Trang trước',
-    'next' => 'Trang tiếp &raquo;',
-
+    "show_text" => "Hiển thị",
+    "show_total" => "trong tổng",
+    "per_page" => "Hiển thị:",
 ];

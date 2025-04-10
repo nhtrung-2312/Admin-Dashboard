@@ -52,17 +52,17 @@ class UserRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'Tên người dùng là bắt buộc',
-            'name.string' => 'Tên người dùng phải là chuỗi',
-            'name.max' => 'Tên người dùng không được vượt quá 255 ký tự',
-            'email.required' => 'Email là bắt buộc',
-            'email.email' => 'Email không hợp lệ',
-            'email.max' => 'Email không được vượt quá 255 ký tự',
-            'email.unique' => 'Email đã tồn tại',
-            'group_role.required' => 'Vai trò là bắt buộc',
-            'group_role.in' => 'Vai trò không hợp lệ',
-            'is_active.required' => 'Trạng thái là bắt buộc',
-            'is_active.boolean' => 'Trạng thái không hợp lệ',
+            'name.required' => __('validation.required', ['attribute' => __('user.create_name')]),
+            'name.string' => __('validation.string', ['attribute' => __('user.create_name')]),
+            'name.max' => __('validation.max.string', ['attribute' => __('user.create_name'), 'max' => 255]),
+            'email.required' => __('validation.required', ['attribute' => __('user.create_email')]),
+            'email.email' => __('validation.email', ['attribute' => __('user.create_email')]),
+            'email.max' => __('validation.max.string', ['attribute' => __('user.create_email'), 'max' => 255]),
+            'email.unique' => __('validation.unique', ['attribute' => __('user.create_email')]),
+            'group_role.required' => __('validation.required', ['attribute' => __('user.create_group')]),
+            'group_role.in' => __('validation.in', ['attribute' => __('user.create_group')]),
+            'is_active.required' => __('validation.required', ['attribute' => __('user.create_status')]),
+            'is_active.boolean' => __('validation.boolean', ['attribute' => __('user.create_status')]),
         ];
     }
 }

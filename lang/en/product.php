@@ -1,0 +1,68 @@
+<?php
+
+return [
+    "list_title" => "Product List",
+    "list_subtitle" => "Showing all the product",
+    "list_button_add" => "Add new product",
+
+    "filter_name" => "Search:",
+    "filter_status" => "Status:",
+    "filter_price_from" => "From",
+    "filter_price_to" => "To",
+    "filter_button_refresh" => "Refresh",
+    "filter_button_search" => "Search",
+    "filter_placeholder_name" => "Search by name...",
+    "filter_placeholder_status_all" => "Show all",
+    "filter_placeholder_status_stop" => "Stopped Selling",
+    "filter_placeholder_status_sell" => "Currently Selling",
+    "filter_placeholder_status_out" => "Out of Stock",
+    "filter_placeholder_price_from" => "Price from...",
+    "filter_placeholder_price_to" => "Price to...",
+
+    "table_no" => "No.",
+    "table_status" => "Status",
+    "table_name" => "Name",
+    "table_action" => "Action",
+    "table_desc" => "Description",
+    "table_price" => "Price",
+    "table_item_sell" => "Currently Selling",
+    "table_item_stop" => "Stopped Selling",
+    "table_item_out" => "Out of Stock",
+    "table_item_button_edit" => "Edit",
+    "table_item_button_delete" => "Delete",
+    "table_isloading" => "Loading...",
+    "table_no_data" => "No data available",
+
+    "create_title" => "Add new product",
+    "create_button_back" => "Go back",
+    "create_button_submit" => "Add",
+    "create_form_name" => "Name",
+    "create_form_desc" => "Description",
+    "create_form_price" => "Price (VND)",
+    "create_form_quantity" => "Quantity",
+    "create_form_status" => "Status",
+    "create_form_image" => "Image",
+
+    "create_form_placeholder_name" => "Product name...",
+    "create_form_placeholder_desc" => "Product description...",
+    "create_form_placeholder_price" => "Enter product price...",
+    "create_form_placeholder_status_selling" => "Selling",
+    "create_form_placeholder_status_out" => "Out of stock",
+    "create_form_placeholder_status_stop" => "Stopped selling",
+    "create_form_placeholder_image_title" => "Upload an image",
+    "create_form_placeholder_image_subtitle" => "PNG, JPG, JPEG, Max: 2MB",
+
+    "system_create_success" => "Create new product successfully.",
+    "system_create_error" => "An error occurred while creating the product",
+    "system_create_missing" => "Check the input information",
+
+    "system_delete_confirm" => "Are you sure you want to delete this product?",
+    "system_delete_success" => "Product deleted successfully",
+    "system_delete_error" => "An error occurred while deleting the product",
+
+    "system_update_success" => "Product updated successfully",
+    "system_update_error" => "An error occurred while updating the product",
+    "system_update_missing" => "Check the input information",
+
+    "system_fetch_error" => "An error occurred while fetching data",
+];

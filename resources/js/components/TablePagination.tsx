@@ -13,6 +13,7 @@ interface TablePaginationProps {
     currentPage: number;
     onPerPageChange: (value: number) => void;
     onPageChange: (page: number) => void;
+    translations: Record<string, any>;
 }
 
 export default function TablePagination({
@@ -23,7 +24,8 @@ export default function TablePagination({
     perPage,
     currentPage,
     onPerPageChange,
-    onPageChange
+    onPageChange,
+    translations
 }: TablePaginationProps) {
     const handlePageClick = (page: number) => {
         if (page !== currentPage) {
@@ -60,17 +62,17 @@ export default function TablePagination({
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <p className="text-sm text-gray-700">
-                        <span className="md:inline">Hiển thị </span>
+                        <span className="md:inline">{translations.show_text} </span>
                         <span className="md:inline font-medium">{from}</span>
                         <span className="md:inline">~</span>
                         <span className="md:inline font-medium">{to}</span>
-                        <span className="md:inline"> trong </span>
+                        <span className="md:inline"> {translations.show_total} </span>
                         <span className="md:inline font-medium">{total}</span>
                     </p>
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <label className="text-sm text-gray-700">Hiển thị:</label>
+                    <label className="text-sm text-gray-700">{translations.per_page}</label>
                     <select
                         className="rounded-md border-gray-300 text-sm"
                         value={perPage}

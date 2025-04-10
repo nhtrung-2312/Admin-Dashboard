@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'failed' => 'Đăng nhập không thành công.',
+    'failed' => 'Mật khẩu không chính xác.',
     'password' => 'Mật khẩu không chính xác.',
     'throttle' => 'Đăng nhập quá nhiều lần. Thử lại sau :second giây.',
 

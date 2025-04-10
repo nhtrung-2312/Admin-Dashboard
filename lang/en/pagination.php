@@ -12,8 +12,7 @@ return [
     | you want to customize your views to better match your application.
     |
     */
-
-    'previous' => '&laquo; Previous',
-    'next' => 'Next &raquo;',
-
+    "show_text" => "Showing",
+    "show_total" => "in total",
+    "per_page" => "Per page:",
 ];

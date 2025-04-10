@@ -16,10 +16,10 @@ class ProductRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255|min:5',
-            'price' => 'required|numeric|min:0',
+            'price' => 'required|numeric|min:0|max:2147483647', // int type
             'description' => 'nullable|string',
             'status' => 'required|in:0,1,2',
-            'quantity' => 'required|numeric|min:0',
+            'quantity' => 'required|numeric|min:0|max:2147483647', // int type
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'image_url' => 'nullable|string'
         ];
@@ -28,20 +28,22 @@ class ProductRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'Tên sản phẩm là bắt buộc',
-            'name.max' => 'Tên sản phẩm không được vượt quá 255 ký tự',
-            'name.min' => 'Tên sản phẩm phải có ít nhất 5 ký tự',
-            'price.required' => 'Giá sản phẩm là bắt buộc',
-            'price.numeric' => 'Giá sản phẩm phải là số',
-            'price.min' => 'Giá sản phẩm không được âm',
-            'status.required' => 'Trạng thái sản phẩm là bắt buộc',
-            'status.in' => 'Trạng thái sản phẩm không hợp lệ',
-            'image.image' => 'File phải là hình ảnh',
-            'image.mimes' => 'Định dạng hình ảnh không hợp lệ',
-            'image.max' => 'Kích thước hình ảnh không được vượt quá 2MB',
-            'quantity.required' => 'Số lượng sản phẩm là bắt buộc',
-            'quantity.numeric' => 'Số lượng sản phẩm phải là số',
-            'quantity.min' => 'Số lượng sản phẩm không được âm'
+            'name.required' => __('validation.required', ['attribute' => __('product.table_name')]),
+            'name.max' => __('validation.max.string', ['attribute' => __('product.table_name'), 'max' => 255]),
+            'name.min' => __('validation.min.string', ['attribute' => __('product.table_name'), 'min' => 5]),
+            'price.required' => __('validation.required', ['attribute' => __('product.table_price')]),
+            'price.numeric' => __('validation.numeric', ['attribute' => __('product.table_price')]),
+            'price.min' => __('validation.min.numeric', ['attribute' => __('product.table_price'), 'min' => 0]),
+            'price.max' => __('validation.max.numeric', ['attribute' => 'price', 'max' => 2147483647]),
+            'status.required' => __('validation.required', ['attribute' => __('product.table_status')]),
+            'status.in' => __('validation.in', ['attribute' => __('product.table_status')]),
+            'image.image' => __('validation.image', ['attribute' => 'image']),
+            'image.mimes' => __('validation.mimes', ['attribute' => 'image', 'values' => 'jpeg,png,jpg']),
+            'image.max' => __('validation.max.file', ['attribute' => 'image', 'max' => 2048]),
+            'quantity.required' => __('validation.required', ['attribute' => 'quantity']),
+            'quantity.numeric' => __('validation.numeric', ['attribute' => 'quantity']),
+            'quantity.min' => __('validation.min.numeric', ['attribute' => 'quantity', 'min' => 0]),
+            'quantity.max' => __('validation.max.numeric', ['attribute' => 'quantity', 'max' => 2147483647])
         ];
     }
 }

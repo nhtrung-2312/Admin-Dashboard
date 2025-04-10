@@ -42,7 +42,7 @@ export default function EditProductModal({ isOpen, onClose, product, onSuccess }
                 quantity: product.quantity,
                 image: null
             });
-            setImagePreview(product.image_url ? `/product/${product.image_url}` : null);
+            setImagePreview(product.image_url ? `/uploads/${product.image_url}` : null);
         }
     }, [product]);
 
@@ -71,11 +71,10 @@ export default function EditProductModal({ isOpen, onClose, product, onSuccess }
                 }));
                 return;
             }
-            setErrors(prev => {
-                const newErrors = { ...prev };
-                delete newErrors.image;
-                return newErrors;
-            });
+            setFormData(prev => ({
+                ...prev,
+                image: file
+            }));
             setImagePreview(URL.createObjectURL(file));
             if (errors.image) {
                 setErrors(prev => {

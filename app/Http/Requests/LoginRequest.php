@@ -13,12 +13,6 @@ class LoginRequest extends FormRequest
         return true;
     }
 
-    public function prepareForValidation()
-    {
-        $locale = $this->header('X-Locale') ?? session('locale') ?? config('app.locale');
-        App::setLocale($locale);
-    }
-
     public function rules(): array
     {
         return [
@@ -31,9 +25,9 @@ class LoginRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'email.required' => __('validation.required'),
-            'email.email' => __('validation.email'),
-            'password.required' => __('validation.required')
+            'email.required' => __('validation.required', ['attribute' => __('login.email')]),
+            'email.email' => __('validation.email', ['attribute' => __('login.email')]),
+            'password.required' => __('validation.required', ['attribute' => __('login.password')])
         ];
     }
 }

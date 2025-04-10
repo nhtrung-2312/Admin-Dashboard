@@ -13,7 +13,12 @@ class HomeController extends Controller
     public function index(Request $request)
     {
         return Inertia::render('Home/index', [
-            'filters' => $request->only(['search', 'status', 'role', 'per_page', 'page'])
+            'filters' => $request->only(['search', 'status', 'role', 'per_page', 'page']),
+            'translations' => [
+                'nav' => __('nav'),
+                'user' => __('user'),
+                'pagination' => __('pagination')
+            ]
         ]);
     }
 }

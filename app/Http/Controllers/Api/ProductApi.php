@@ -47,8 +47,8 @@ class ProductApi extends Controller
                 $query->paginate($perPage);
             }
     
-            // Step 6: Sort by date added
-            $query->orderBy('created_at', 'desc');
+            // Step 6: Sort by date updated
+            $query->orderBy('updated_at', 'desc');
     
             // Step 7: Paginate the results (default by 10)
             $perPage = $request->input('per_page', 10);
@@ -69,9 +69,7 @@ class ProductApi extends Controller
                 ]
             ], 200);
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Lỗi khi lấy danh sách sản phẩm'
-            ], 500);
+            return response()->json([], 500);
         }
     }
  
@@ -112,14 +110,11 @@ class ProductApi extends Controller
             Product::create($validatedData);
 
             //Step 5: Return response
-            return response()->json([
-                'message' => 'Sản phẩm đã được tạo thành công'
-            ], 200);
+            return response()->json([], 200);
 
         } catch (\Exception $e) {
             //Step 6: Return error response
             return response()->json([
-                'message' => 'Lỗi khi tạo sản phẩm',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -135,6 +130,12 @@ class ProductApi extends Controller
             return response()->json(['message' => 'Sản phẩm không tồn tại'], 404);
         }
         try {
+            //Check for upload folder and create if not exists
+            $uploadPath = public_path('uploads');
+            if (!file_exists($uploadPath)) {
+                mkdir($uploadPath, 0755, true);
+            }
+
             //Step 1: Get data from request
             $data = [
                 'name' => $request->input('name'),
@@ -142,28 +143,27 @@ class ProductApi extends Controller
                 'price' => $request->input('price'),
                 'quantity' => $request->input('quantity'),
                 'status' => $request->input('status'),
+                'updated_at' => now(),
             ];
 
             //Step 2: Upload image if exists
-            if($request->hasFile('image')){
+            if ($request->hasFile('image')) {
                 $image = $request->file('image');
-                $imageName = time() . '.' . $image->getClientOriginalExtension();
-                $image->move(public_path('uploads'), $imageName);
+                $imageName = $data['name'] . '_' . time() . '.' . $image->getClientOriginalExtension();
+                $image->move($uploadPath, $imageName);
                 $data['image_url'] = $imageName;
             }
 
-            //Step 3: Update product
+            //Step 3: Update products
             $product->update($data);
 
             //Step 4: Return response
             return response()->json([
-                'message' => 'Sản phẩm đã được cập nhật thành công'
             ], 200);
 
         } catch (\Exception $e) {
             //Step 5: Return error response
             return response()->json([
-                'message' => 'Lỗi khi cập nhật sản phẩm',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -178,22 +178,16 @@ class ProductApi extends Controller
             //Step 1: Delete product
             $product = Product::find($id);
             if (!$product) {
-                return response()->json(['message' => 'Sản phẩm không tồn tại'], 404);
+                return response()->json([], 404);
             }
 
             //Step 2: Delete product
             $product->delete();
 
             //Step 3: Return response
-            return response()->json([
-                'message' => 'Sản phẩm đã được xóa thành công'
-            ], 200);
+            return response()->json([], 200);
         } catch (\Exception $e) {
-            //Step 4: Return error response
-            Log::error('Lỗi khi xóa sản phẩm: ' . $e->getMessage());
-
             return response()->json([
-                'message' => 'Có lỗi xảy ra khi xóa sản phẩm',
                 'error' => $e->getMessage()
             ], 500);
         }

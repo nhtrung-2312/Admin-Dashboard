@@ -14,7 +14,8 @@ import { debounce } from 'lodash';
 interface Props {
     auth: {
         user: User;
-    };
+    },
+    translations: Record<string, any>;
 }
 
 interface UserData {
@@ -41,7 +42,14 @@ interface PaginationMeta {
     total: number;
 }
 
-export default function Index({ auth }: Props) {
+interface FormData {
+    name: string;
+    email: string;
+    is_active: number;
+    group_role: string;
+}
+
+export default function Index({ auth, translations }: Props) {
     const searchParams = new URLSearchParams(window.location.search);
 
     const [currentPage, setCurrentPage] = useState<number>(Number(searchParams.get('page')) || 1);
@@ -51,7 +59,7 @@ export default function Index({ auth }: Props) {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [meta, setMeta] = useState<PaginationMeta | null>(null);
     const [users, setUsers] = useState<UserData[]>([]);
-    const [formData, setFormData] = useState<{   name: string; email: string; is_active: number; group_role: string }>({
+    const [formData, setFormData] = useState<FormData>({
         name: '',
         email: '',
         is_active: 0,
@@ -66,23 +74,27 @@ export default function Index({ auth }: Props) {
     const [editingUser, setEditingUser] = useState<UserData | null>(null);
     const [tempStatusFilter, setTempStatusFilter] = useState<string>(searchParams.get('status') || '');
     const [tempRoleFilter, setTempRoleFilter] = useState<string>(searchParams.get('role') || '');
+    const [editFormData, setEditFormData] = useState<FormData>({
+        name: '',
+        email: '',
+        is_active: 0,
+        group_role: 'user'
+    });
 
     const canEdit = auth.user.roles.includes('admin');
     const canDelete = auth.user.roles.includes('admin');
     const canCreate = auth.user.roles.includes('admin');
 
     const updateUrlAndFetch = (params: Record<string, any>) => {
-        const newParams = new URLSearchParams(window.location.search);
-
-        Object.entries(params).forEach(([key, value]) => {
-            if (value) {
-                newParams.set(key, String(value));
-            } else {
-                newParams.delete(key);
+        // Lọc ra các tham số có giá trị
+        const filteredParams = Object.entries(params).reduce((acc, [key, value]) => {
+            if (value !== null && value !== undefined && value !== '') {
+                acc[key] = value;
             }
-        });
+            return acc;
+        }, {} as Record<string, any>);
 
-        router.get(window.location.pathname, params, {
+        router.get(window.location.pathname, filteredParams, {
             preserveState: true,
             preserveScroll: true,
             replace: true
@@ -132,7 +144,7 @@ export default function Index({ auth }: Props) {
         setIsCreating(true);
         try {
             const response = await axios.post('/api/users', formData);
-            toast.success('Người dùng đã được thêm thành công!');
+            toast.success(translations.user.system_create_success);
 
             // Reset form và load lại danh sách
             setFormData({
@@ -156,14 +168,14 @@ export default function Index({ auth }: Props) {
             setUsers(usersResponse.data.data);
             setMeta(usersResponse.data.meta);
 
+            
         } catch (error: any) {
             if (error.response?.status === 422) {
                 // Xử lý lỗi validation
                 setErrors(error.response.data.errors || {});
-                toast.error('Vui lòng kiểm tra lại thông tin nhập vào');
+                toast.error(translations.user.system_create_missing);
             } else {
-                console.error(error);
-                toast.error('Có lỗi xảy ra khi thêm người dùng.');
+                toast.error(translations.user.system_create_error);
             }
         } finally {
             setIsCreating(false);
@@ -171,11 +183,11 @@ export default function Index({ auth }: Props) {
     };
 
     const handleDelete = async (userId: number) => {
-        if (window.confirm('Bạn có chắc chắn muốn xóa người dùng này?')) {
+        if (window.confirm(translations.user.system_delete_confirm)) {
             setIsDeleting(true);
             try {
                 await axios.delete(`/api/users/${userId}`);
-                toast.success('Xóa người dùng thành công');
+                toast.success(translations.user.system_delete_success);
 
                 // Tải lại dữ liệu sau khi xóa
                 const response = await axios.get('/api/users', {
@@ -203,7 +215,7 @@ export default function Index({ auth }: Props) {
                     setMeta(response.data.meta);
                 }
             } catch (error) {
-                toast.error('Có lỗi xảy ra khi xóa người dùng');
+                toast.error(translations.user.system_delete_error);
             } finally {
                 setIsDeleting(false);
             }
@@ -245,7 +257,7 @@ export default function Index({ auth }: Props) {
 
     const handleEdit = (user: UserData) => {
         setEditingUser(user);
-        setFormData({
+        setEditFormData({
             name: user.name,
             email: user.email,
             is_active: user.is_active ? 1 : 0,
@@ -259,8 +271,8 @@ export default function Index({ auth }: Props) {
         if (!editingUser) return;
 
         try {
-            await axios.put(`/api/users/${editingUser.id}`, formData);
-            toast.success('Cập nhật người dùng thành công!');
+            await axios.put(`/api/users/${editingUser.id}`, editFormData);
+            toast.success(translations.user.system_update_success);
             setIsEditModalOpen(false);
 
             // Tải lại danh sách
@@ -278,9 +290,9 @@ export default function Index({ auth }: Props) {
         } catch (error: any) {
             if (error.response?.status === 422) {
                 setErrors(error.response.data.errors || {});
-                toast.error('Vui lòng kiểm tra lại thông tin nhập vào');
+                toast.error(translations.user.system_update_missig);
             } else {
-                toast.error('Có lỗi xảy ra khi cập nhật người dùng');
+                toast.error(translations.user.system_update_error);
             }
         }
     };
@@ -301,7 +313,7 @@ export default function Index({ auth }: Props) {
                 setUsers(response.data.data);
                 setMeta(response.data.meta);
             } catch (error) {
-                toast.error('Không thể tải danh sách người dùng.');
+                toast.error(translations.user.system_fetch_error);
             } finally {
                 setIsLoading(false);
             }
@@ -311,7 +323,7 @@ export default function Index({ auth }: Props) {
     }, [currentPage, perPage, statusFilter, roleFilter, searchTerm]);
 
     return (
-        <MainLayout user={auth.user}>
+        <MainLayout user={auth.user} translations={translations.nav}>
             <ToastContainer
                 position="top-right"
                 autoClose={3000}
@@ -330,18 +342,20 @@ export default function Index({ auth }: Props) {
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900">
                             <section hidden={!canCreate}>
-                                <div className="flex justify-between items-center mb-6">
-                                    <h2 className="text-2xl font-semibold">Thêm người dùng mới</h2>
+                                <div className="mb-6">
+                                    <h2 className="text-2xl font-semibold">{translations.user.create_title}</h2>
+                                    <p className="text-sm text-gray-500 mt-1">{translations.user.create_subtitle}</p>
                                 </div>
 
                                 <form onSubmit={handleCreate} className="grid grid-cols-2 gap-4 mb-8">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Tên</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">{translations.user.create_name}</label>
                                         <input
                                             type="text"
                                             name="name"
                                             value={formData.name}
                                             onChange={handleInputChange}
+                                            placeholder={translations.user.create_placeholder_name}
                                             className={`w-full px-3 py-2 border rounded-md ${
                                                 errors.name ? 'border-red-500' : 'border-gray-300'
                                             }`}
@@ -354,12 +368,13 @@ export default function Index({ auth }: Props) {
                                         )}
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">{translations.user.create_email}</label>
                                         <input
                                             type="email"
                                             name="email"
                                             value={formData.email}
                                             onChange={handleInputChange}
+                                            placeholder={translations.user.create_placeholder_email}
                                             className={`w-full px-3 py-2 border rounded-md ${
                                                 errors.email ? 'border-red-500' : 'border-gray-300'
                                             }`}
@@ -370,7 +385,7 @@ export default function Index({ auth }: Props) {
                                         )}
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Trạng thái hoạt động</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">{translations.user.create_status}</label>
                                         <select
                                             name="is_active"
                                             value={formData.is_active ? '1' : '0'}
@@ -380,22 +395,22 @@ export default function Index({ auth }: Props) {
                                             }`}
                                             disabled={!canCreate}
                                         >
-                                            <option value="1">Hoạt động</option>
-                                            <option value="0">Không hoạt động</option>
+                                            <option value="1">{translations.user.table_item_active}</option>
+                                            <option value="0">{translations.user.table_item_inactive}</option>
                                         </select>
                                         {errors.is_active && (
                                             <p className="mt-1 text-sm text-red-500">{errors.is_active}</p>
                                         )}
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Chức vụ</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">{translations.user.create_group}</label>
                                         <select
                                             name="group_role"
                                             value={formData.group_role}
                                             onChange={handleInputChange}
                                             className={`w-full px-3 py-2 border rounded-md ${
                                                 errors.group_role ? 'border-red-500' : 'border-gray-300'
-                                                }`}
+                                            }`}
                                             disabled={!canCreate}
                                         >
                                             <option value="user">User</option>
@@ -411,20 +426,20 @@ export default function Index({ auth }: Props) {
                                             disabled={isCreating}
                                             className="bg-lime-500 hover:bg-lime-600"
                                         >
-                                            {isCreating ? 'Đang tạo...' : 'Thêm người dùng'}
+                                            {isCreating ? 'Đang tạo...' : translations.user.create_button}
                                         </Button>
                                     </div>
                                 </form>
                             </section>
 
                             <section className="border-t border-gray-200 pt-8">
-
-                                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                                    <h2 className="text-2xl font-semibold">Danh sách người dùng</h2>
+                                <div className="mb-6">
+                                    <h2 className="text-2xl font-semibold">{translations.user.list_title}</h2>
+                                    <p className="text-sm text-gray-500 mt-1">{translations.user.list_subtitle}</p>
                                 </div>
                                 {meta && (
                                     <div className="mb-4">
-                                        <TablePagination
+                                        <TablePagination translations={translations.pagination}
                                             links={meta.links}
                                             from={meta.from}
                                             to={meta.to}
@@ -439,35 +454,35 @@ export default function Index({ auth }: Props) {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                                     <div className="md:col-span-2 lg:col-span-1">
-                                        <label className="block text-sm text-gray-700 mb-1">Tìm kiếm:</label>
+                                        <label className="block text-sm text-gray-700 mb-1">{translations.user.list_filter_search_title}</label>
                                         <input
                                             type="text"
-                                            placeholder="Tìm kiếm theo tên, email..."
+                                            placeholder={translations.user.list_filter_search_placeholder}
                                             value={tempSearchTerm}
                                             onChange={handleSearchChange}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-md"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm text-gray-700 mb-1">Trạng thái:</label>
+                                        <label className="block text-sm text-gray-700 mb-1">{translations.user.list_filter_status_title}</label>
                                         <select
                                             className="w-full px-3 py-2 border border-gray-300 rounded-md"
                                             value={tempStatusFilter}
                                             onChange={handleStatusChange}
                                         >
-                                            <option value="">Tất cả</option>
-                                            <option value="active">Đang hoạt động</option>
-                                            <option value="inactive">Không hoạt động</option>
+                                            <option value="">{translations.user.list_filter_placeholder_all}</option>
+                                            <option value="active">{translations.user.table_item_active}</option>
+                                            <option value="inactive">{translations.user.table_item_inactive}</option>
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-sm text-gray-700 mb-1">Chức vụ:</label>
+                                        <label className="block text-sm text-gray-700 mb-1">{translations.user.list_filter_group_title}</label>
                                         <select
                                             className="w-full px-3 py-2 border border-gray-300 rounded-md"
                                             value={tempRoleFilter}
                                             onChange={handleRoleChange}
                                         >
-                                            <option value="">Tất cả</option>
+                                            <option value="">{translations.user.list_filter_placeholder_all}</option>
                                             <option value="admin">Admin</option>
                                             <option value="user">User</option>
                                         </select>
@@ -481,23 +496,23 @@ export default function Index({ auth }: Props) {
                                             className="bg-gray-500 hover:bg-gray-600 text-white"
                                             disabled={isLoading}
                                         >
-                                            {isLoading ? 'Đang tải...' : 'Làm mới'}
+                                            {isLoading ? 'Đang tải...' : translations.user.list_filter_button_reset}
                                         </Button>
                                         <Button
                                             onClick={handleSearch}
                                             className="bg-blue-500 hover:bg-blue-600 text-white"
                                             disabled={isLoading}
                                         >
-                                            Tìm kiếm
+                                            {translations.user.list_filter_button_search}
                                         </Button>
                                     </div>
                                 </div>
 
                                 {isLoading ? (
-                                    <div className="text-center py-4">Đang tải dữ liệu...</div>
+                                    <div className="text-center py-4">{translations.user.table_isloading}</div>
                                 ) : users.length === 0 ? (
                                     <div className="text-center py-4">
-                                        Không có dữ liệu để hiển thị
+                                        {translations.user.table_no_data}
                                     </div>
                                 ) : (
                                     <>
@@ -505,12 +520,12 @@ export default function Index({ auth }: Props) {
                                             <table className="min-w-full divide-y divide-gray-200">
                                                 <thead className="bg-gray-50">
                                                     <tr>
-                                                        <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">STT</th>
-                                                        <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">Hoạt động</th>
-                                                        <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">Tên</th>
-                                                        <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">Email</th>
-                                                        <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">Chức vụ</th>
-                                                        <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">Thao tác</th>
+                                                        <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">{translations.user.table_no}</th>
+                                                        <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">{translations.user.table_status}</th>
+                                                        <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">{translations.user.table_name}</th>
+                                                        <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">{translations.user.table_email}</th>
+                                                        <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">{translations.user.table_group}</th>
+                                                        <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">{translations.user.table_action}</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="bg-white divide-y divide-gray-200">
@@ -525,7 +540,7 @@ export default function Index({ auth }: Props) {
                                                                 <div className="flex items-center gap-2 justify-center">
                                                                     <div className={`h-2.5 w-2.5 rounded-full ${user.is_active ? 'bg-green-500' : 'bg-red-500'}`}></div>
                                                                     <span className="text-sm text-gray-500">
-                                                                        {user.is_active ? 'Đang hoạt động' : 'Không hoạt động'}
+                                                                        {user.is_active ? translations.user.table_item_active : translations.user.table_item_inactive}
                                                                     </span>
                                                                 </div>
                                                             </td>
@@ -547,7 +562,7 @@ export default function Index({ auth }: Props) {
                                                                         onClick={() => handleEdit(user)}
                                                                         disabled={!canEdit}
                                                                     >
-                                                                        Sửa
+                                                                        {translations.user.table_item_button_edit}
                                                                     </Button>
                                                                     <Button
                                                                         size="sm"
@@ -556,7 +571,7 @@ export default function Index({ auth }: Props) {
                                                                         onClick={() => handleDelete(user.id)}
                                                                         disabled={!canDelete || isDeleting}
                                                                     >
-                                                                        {isDeleting ? 'Đang xóa...' : 'Xóa'}
+                                                                        {isDeleting ? 'Đang xóa...' : translations.user.table_item_button_delete}
                                                                     </Button>
                                                                 </div>
                                                             </td>
@@ -576,7 +591,7 @@ export default function Index({ auth }: Props) {
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 text-black">
                     <div className="bg-white p-6 rounded-lg w-[500px]">
                         <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-xl font-semibold">Cập nhật thông tin người dùng</h2>
+                            <h2 className="text-xl font-semibold">{translations.user.update_title}</h2>
                             <button
                                 onClick={() => setIsEditModalOpen(false)}
                                 className="text-gray-500 hover:text-gray-700"
@@ -589,15 +604,13 @@ export default function Index({ auth }: Props) {
 
                         <form onSubmit={handleUpdate} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Tên</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">{translations.user.update_name}</label>
                                 <input
                                     type="text"
                                     name="name"
-                                    value={formData.name}
-                                    onChange={handleInputChange}
-                                    className={`w-full px-3 py-2 border rounded-md ${
-                                        errors.name ? 'border-red-500' : 'border-gray-300'
-                                    }`}
+                                    value={editFormData.name}
+                                    onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                                    className={`w-full px-3 py-2 border rounded-md ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
                                 />
                                 {errors.name && (
                                     <p className="mt-1 text-sm text-red-500">
@@ -607,15 +620,13 @@ export default function Index({ auth }: Props) {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">{translations.user.update_email}</label>
                                 <input
                                     type="email"
                                     name="email"
-                                    value={formData.email}
-                                    onChange={handleInputChange}
-                                    className={`w-full px-3 py-2 border rounded-md ${
-                                        errors.email ? 'border-red-500' : 'border-gray-300'
-                                    }`}
+                                    value={editFormData.email}
+                                    onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                                    className={`w-full px-3 py-2 border rounded-md ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
                                 />
                                 {errors.email && (
                                     <p className="mt-1 text-sm text-red-500">{errors.email}</p>
@@ -623,31 +634,25 @@ export default function Index({ auth }: Props) {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Trạng thái hoạt động
-                                </label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">{translations.user.update_status}</label>
                                 <select
                                     name="is_active"
-                                    value={formData.is_active ? '1' : '0'}
-                                    onChange={handleInputChange}
-                                    className={`w-full px-3 py-2 border rounded-md ${
-                                        errors.is_active ? 'border-red-500' : 'border-gray-300'
-                                    }`}
+                                    value={editFormData.is_active ? '1' : '0'}
+                                    onChange={(e) => setEditFormData({ ...editFormData, is_active: parseInt(e.target.value) })}
+                                    className={`w-full px-3 py-2 border rounded-md ${errors.is_active ? 'border-red-500' : 'border-gray-300'}`}
                                 >
-                                    <option value="1">Hoạt động</option>
-                                    <option value="0">Không hoạt động</option>
+                                    <option value="1">{translations.user.update_status_placeholder_active}</option>
+                                    <option value="0">{translations.user.update_status_placeholder_inactive}</option>
                                 </select>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Chức vụ</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">{translations.user.update_group}</label>
                                 <select
                                     name="group_role"
-                                    value={formData.group_role}
-                                    onChange={handleInputChange}
-                                    className={`w-full px-3 py-2 border rounded-md ${
-                                        errors.group_role ? 'border-red-500' : 'border-gray-300'
-                                    }`}
+                                    value={editFormData.group_role}
+                                    onChange={(e) => setEditFormData({ ...editFormData, group_role: e.target.value })}
+                                    className={`w-full px-3 py-2 border rounded-md ${errors.group_role ? 'border-red-500' : 'border-gray-300'}`}
                                 >
                                     <option value="user">User</option>
                                     <option value="admin">Admin</option>
@@ -660,13 +665,13 @@ export default function Index({ auth }: Props) {
                                     className="bg-red-500 hover:bg-red-600 text-white"
                                     onClick={() => setIsEditModalOpen(false)}
                                 >
-                                    Hủy
+                                    {translations.user.update_button_cancel}
                                 </Button>
                                 <Button
                                     type="submit"
                                     className="bg-blue-500 hover:bg-blue-600 text-white"
                                 >
-                                    Cập nhật
+                                    {translations.user.update_button_accept}
                                 </Button>
                             </div>
                         </form>

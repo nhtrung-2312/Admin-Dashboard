@@ -1,0 +1,68 @@
+<?php
+
+return [
+    "list_title" => "Danh sách sản phẩm",
+    "list_subtitle" => "Hiển thị tất cả sản phẩm",
+    "list_button_add" => "Thêm sản phẩm mới",
+
+    "filter_name" => "Tìm kiếm:",
+    "filter_status" => "Trạng thái:",
+    "filter_price_from" => "Từ",
+    "filter_price_to" => "Đến",
+    "filter_button_refresh" => "Làm mới",
+    "filter_button_search" => "Tìm kiếm",
+    "filter_placeholder_name" => "Tìm kiếm theo tên...",
+    "filter_placeholder_status_all" => "Hiển thị tất cả",
+    "filter_placeholder_status_stop" => "Ngừng bán",
+    "filter_placeholder_status_sell" => "Đang bán",
+    "filter_placeholder_status_out" => "Hết hàng",
+    "filter_placeholder_price_from" => "Giá từ...",
+    "filter_placeholder_price_to" => "Giá đến...",
+
+    "table_no" => "STT",
+    "table_status" => "Trạng thái",
+    "table_name" => "Tên",
+    "table_action" => "Thao tác",
+    "table_desc" => "Mô tả",
+    "table_price" => "Giá",
+    "table_item_sell" => "Đang bán",
+    "table_item_stop" => "Ngừng bán",
+    "table_item_out" => "Hết hàng",
+    "table_item_button_edit" => "Sửa",
+    "table_item_button_delete" => "Xoá",
+    "table_isloading" => "Đang tải...",
+    "table_no_data" => "Không có dữ liệu",
+
+    "create_title" => "Thêm sản phẩm mới",
+    "create_button_back" => "Quay lại",
+    "create_button_submit" => "Thêm",
+    "create_form_name" => "Tên",
+    "create_form_desc" => "Mô tả",
+    "create_form_price" => "Giá (VND)", 
+    "create_form_quantity" => "Số lượng",
+    "create_form_status" => "Trạng thái",
+    "create_form_image" => "Hình ảnh",
+
+    "create_form_placeholder_name" => "Tên sản phẩm...",
+    "create_form_placeholder_desc" => "Mô tả sản phẩm...",
+    "create_form_placeholder_desc" => "Nhập giá sản phẩm...",
+    "create_form_placeholder_status_selling" => "Đang bán",
+    "create_form_placeholder_status_out" => "Hết hàng",
+    "create_form_placeholder_status_stop" => "Ngừng bán",
+    "create_form_placeholder_image_title" => "Tải lên hình ảnh",
+    "create_form_placeholder_image_subtitle" => "PNG, JPG, JPEG, Tối đa: 2MB",
+
+    "system_create_success" => "Tạo sản phẩm mới thành công.",
+    "system_create_error" => "Đã xảy ra lỗi khi tạo sản phẩm",
+    "system_create_missing" => "Kiểm tra thông tin đầu vào",
+
+    "system_delete_confirm" => "Bạn có chắc chắn muốn xoá sản phẩm này không?",
+    "system_delete_success" => "Xoá sản phẩm thành công",
+    "system_delete_error" => "Đã xảy ra lỗi khi xoá sản phẩm",
+
+    "system_update_success" => "Cập nhật sản phẩm thành công",
+    "system_update_error" => "Đã xảy ra lỗi khi cập nhật sản phẩm",
+    "system_update_missing" => "Kiểm tra thông tin đầu vào",
+
+    "system_fetch_error" => "Đã xảy ra lỗi khi lấy dữ liệu",
+];

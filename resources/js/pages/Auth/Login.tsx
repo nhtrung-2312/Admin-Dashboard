@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { useForm } from '@inertiajs/react';
 import { Head } from '@inertiajs/react';
 import {
@@ -14,139 +14,169 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { Globe } from 'lucide-react';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 
 interface Props {
-    translations: {
-        login: {
-            title: string;
-            email: string;
-            password: string;
-            remember: string;
-            login: string;
-        };
-        validation: {
-            required: string;
-            email: string;
-        };
-        attributes: {
-            email: string;
-            password: string;
-        };
-        auth: {
-            fail: string;
-            error: string;
-            deleted_account: string;
-        };
-        locale: string;
-        system: {
-            fail: string;
-        };
-    };
+    translations: Record<string, any>;
 }
 
 export default function Login({ translations }: Props) {
-    const emailErrorRef = useRef<HTMLParagraphElement>(null);
-    const passwordErrorRef = useRef<HTMLParagraphElement>(null);
-    const { data, setData, post, processing, errors } = useForm<{
-        email: string,
-        password: string,
-        remember: boolean
-    }>({
+    const [errors, setErrors] = useState<Record<string, string>>({});
+    const [processing, setProcessing] = useState(false);
+    const [formData, setFormData] = useState({
         email: '',
         password: '',
-        remember: false,
+        remember_token: false
     });
 
-    // useEffect(() => {
-    //     if (errors.email && emailErrorRef.current) {
-    //         const errorMessage = translations.validation.email.replace(':attribute', translations.attributes.email);
-    //         emailErrorRef.current.textContent = errorMessage;
-    //     }
-    //     if (errors.password && passwordErrorRef.current) {
-    //         const errorMessage = translations.validation.required.replace(':attribute', translations.attributes.password); 
-    //         passwordErrorRef.current.textContent = errorMessage;
-    //     }
-    // }, [errors, translations]);
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleCheckboxChange = (checked: boolean) => {
+        setFormData(prev => ({
+            ...prev,
+            remember_token: checked
+        }));
+    };
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        post('/login', {
-            headers: {
-                'X-Locale': translations.locale
-            },
-            onSuccess: (response: any) => {
-                if (response.errors) {
-                    return;
+        setProcessing(true);
+        setErrors({});
+
+        try {
+            const response = await axios.post('/login', formData, {
+                headers: {
+                    'X-Locale': translations.locale,
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
                 }
-                window.location.href = '/';
-            },
-            onError: (response: any) => {
-                console.log(response);
+            });
+
+            if (response.data.status && response.data.redirect) {
+                window.location.href = response.data.redirect;
             }
-        });
+
+        } catch (error: any) {
+            if (error.response) {
+                switch (error.response.status) {
+                    case 401:
+                        setErrors({
+                            password: translations.auth.failed
+                        });
+                        break;
+                    case 406:
+                        setErrors({
+                            password: translations.auth.failed
+                        });
+                        break;
+                    case 422:
+                        setErrors(error.response.data.errors);
+                        break;
+                    case 500:
+                        setErrors({
+                            email: translations.system.fail
+                        });
+                        break;
+                    default:
+                        setErrors({
+                            email: translations.system.fail
+                        });
+                }
+            }
+        } finally {
+            setProcessing(false);
+        }
     };
 
     return (
         <>
             <Head title={translations.login.title} />
 
-            <div className="min-h-screen flex items-center justify-center bg-gray-900">
-                <Card className="w-full max-w-md bg-gray-800 text-white">
-                    <CardHeader className="relative">
-                        <div className="absolute right-2 top-2 z-10">
-                            <LanguageSwitcher />
-                        </div>
-                        <CardTitle className='text-center pt-4'>{translations.login.title}</CardTitle>
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50">
+                <div className="absolute top-4 right-4">
+                    <div className="flex items-center space-x-2 bg-white rounded-full px-3 py-1.5 shadow-sm">
+                        <LanguageSwitcher />
+                    </div>
+                </div>
+
+                <Card className="w-full max-w-md bg-white/80 backdrop-blur-sm text-gray-900 shadow-xl rounded-xl border-0">
+                    <CardHeader className="space-y-1">
+                        <CardTitle className="text-2xl font-bold text-center text-gray-800">
+                            {translations.login.title}
+                        </CardTitle>
+                        <CardDescription className="text-center text-gray-500">
+                            {translations.login.subtitle}
+                        </CardDescription>
                     </CardHeader>
 
                     <form onSubmit={handleSubmit}>
                         <CardContent className="space-y-4">
-                            <div className="space-y-1">
-                                <Label htmlFor="email" className="text-white">
+                            <div className="space-y-2">
+                                <Label htmlFor="email" className="text-sm font-medium text-gray-700">
                                     {translations.login.email}
                                 </Label>
-                                <Input
+                                <input
                                     id="email"
+                                    name="email" 
                                     type="text"
-                                    value={data.email}
+                                    value={formData.email}
                                     placeholder='example@gmail.com'
-                                    onChange={(e) => setData('email', e.target.value)}
-                                    className="w-full bg-gray-700 text-white border-gray-600"
+                                    onChange={handleInputChange}
+                                    className={`w-full px-3 py-2 border rounded-md ${
+                                        errors.name ? 'border-red-500' : 'border-gray-300'
+                                    }`}
+                                    autoComplete="email"
+                                    autoCapitalize="none"
+                                    spellCheck={false}
                                 />
                                 {errors.email && (
-                                    <p className="text-sm text-red-400 mt-1" ref={emailErrorRef}>
+                                    <p className="text-sm text-red-500 mt-1">
                                         {errors.email}
                                     </p>
                                 )}
                             </div>
 
-                            <div className="space-y-1">
-                                <Label htmlFor="password" className="text-white">
+                            <div className="space-y-2">
+                                <Label htmlFor="password" className="text-sm font-medium text-gray-700">
                                     {translations.login.password}
                                 </Label>
-                                <Input
+                                <input
                                     id="password"
-                                    type="password"
-                                    value={data.password}
-                                    onChange={(e) => setData('password', e.target.value)}
-                                    className="w-full bg-gray-700 text-white border-gray-600"
+                                    name="password"
+                                    type="password" 
+                                    value={formData.password}
+                                    onChange={handleInputChange}
+                                    className={`w-full px-3 py-2 border rounded-md ${
+                                        errors.name ? 'border-red-500' : 'border-gray-300'
+                                    }`}
                                     placeholder='*******'
+                                    autoComplete="current-password"
+                                    autoCapitalize="none"
+                                    spellCheck={false}
                                 />
                                 {errors.password && (
-                                    <p className="text-sm text-red-400 mt-1" ref={passwordErrorRef}>
+                                    <p className="text-sm text-red-500 mt-1">
                                         {errors.password}
                                     </p>
                                 )}
                             </div>
 
-                            <div className="flex items-center space-x-2 mt-3 mb-3">
+                            <div className="flex items-center space-x-2 mt-2 mb-2">
                                 <Checkbox
                                     id="remember"
-                                    checked={data.remember}
-                                    onCheckedChange={(checked) => setData('remember', checked as boolean)}
-                                    className="bg-gray-700 border-gray-600"
+                                    checked={formData.remember_token}
+                                    onCheckedChange={handleCheckboxChange}
+                                    className="bg-white/50 border-gray-500 rounded-lg"
                                 />
-                                <Label htmlFor="remember" className="text-white">
+                                <Label htmlFor="remember" className="text-sm text-gray-600">
                                     {translations.login.remember}
                                 </Label>
                             </div>
@@ -155,7 +185,7 @@ export default function Login({ translations }: Props) {
                         <CardFooter>
                             <Button
                                 type="submit"
-                                className="w-full bg-blue-600 hover:bg-blue-700"
+                                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md hover:shadow-lg transition-all duration-200 rounded-lg py-2"
                                 disabled={processing}
                             >
                                 {processing ? 'Processing...' : translations.login.login}

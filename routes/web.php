@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\Api\ProductApi;
+use App\Http\Controllers\Api\AuthenticationApi;
 use Illuminate\Support\Facades\Route;
 
 // API Routes
@@ -47,7 +48,7 @@ Route::prefix('api')->name('api.')->middleware(['auth'])->group(function () {
 // Inertia Routes
 Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
-    Route::get('/permission', [PermissionController::class, 'index'])->name('permission');
+
 
     Route::prefix('products')->group(function () {
         Route::get('/', [ProductController::class, 'index'])->name('products');
@@ -59,8 +60,10 @@ Route::middleware(['web', 'auth'])->group(function () {
 // Auth Routes
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'login'])->name('login');
-    Route::post('/login', [AuthController::class, 'authenticate'])->name('login.authenticate');
+    Route::post('/login', [AuthenticationApi::class, 'login'])->name('login.authenticate');
 });
+
+Route::post('/logout', [AuthenticationApi::class, 'logout'])->name('logout');
 
 Route::get('/api/languages', function () {
     return response()->json([
@@ -76,5 +79,3 @@ Route::get('/lang/{locale?}', function ($locale = null) {
     }
     return redirect()->back();
 });
-
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
