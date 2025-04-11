@@ -17,7 +17,7 @@ class ProductRequest extends FormRequest
         return [
             'name' => 'required|string|max:255|min:5',
             'price' => 'required|numeric|min:0|max:2147483647', // int type
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:255',
             'status' => 'required|in:0,1,2',
             'quantity' => 'required|numeric|min:0|max:2147483647', // int type
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
@@ -35,6 +35,7 @@ class ProductRequest extends FormRequest
             'price.numeric' => __('validation.numeric', ['attribute' => __('product.table_price')]),
             'price.min' => __('validation.min.numeric', ['attribute' => __('product.table_price'), 'min' => 0]),
             'price.max' => __('validation.max.numeric', ['attribute' => 'price', 'max' => 2147483647]),
+            'description.max' => __('validation.max.string', ['attribute' => 'description', 'max' => 255]),
             'status.required' => __('validation.required', ['attribute' => __('product.table_status')]),
             'status.in' => __('validation.in', ['attribute' => __('product.table_status')]),
             'image.image' => __('validation.image', ['attribute' => 'image']),

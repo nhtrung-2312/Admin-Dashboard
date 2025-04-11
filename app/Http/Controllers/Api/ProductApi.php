@@ -123,8 +123,9 @@ class ProductApi extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(ProductRequest $request, string $id)
     {
+
         $product = Product::find($id);
         if (!$product) {
             return response()->json(['message' => 'Sản phẩm không tồn tại'], 404);
@@ -136,10 +137,14 @@ class ProductApi extends Controller
                 mkdir($uploadPath, 0755, true);
             }
 
+            $credentials = $request->validated();
+
             //Step 1: Get data from request
+            $desc = $request->input('description') === 'null' || $request->input('description') === '' ? null : $request->input('description');
+
             $data = [
                 'name' => $request->input('name'),
-                'description' => $request->input('description'),
+                'description' => $desc,
                 'price' => $request->input('price'),
                 'quantity' => $request->input('quantity'),
                 'status' => $request->input('status'),

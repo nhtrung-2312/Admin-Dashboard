@@ -14,13 +14,13 @@ return new class extends Migration
         Schema::create('product', function (Blueprint $table) {
             $table->string('id', 10)->primary();
             $table->string('name', 255)->unique();
-            $table->string('description', 255);
-            $table->integer('price');
+            $table->string('description', 255)->nullable();
+            $table->integer('price')->default(0);
             $table->integer('quantity')->default(0);
             $table->string('image_url', 255)->nullable();
             $table->tinyInteger('status')->default(1)->comment('0: Ngừng bán , 1: Đang bán, 2: Hết hàng');
-            $table->timestamp('created_at')->nullable();
-            $table->timestamp('updated_at')->nullable();
+            $table->timestamp('created_at')->default(now());
+            $table->timestamp('updated_at')->default(now());
         });
     }
 

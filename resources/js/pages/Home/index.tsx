@@ -349,7 +349,7 @@ export default function Index({ auth, translations }: Props) {
 
                                 <form onSubmit={handleCreate} className="grid grid-cols-2 gap-4 mb-8">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">{translations.user.create_name}</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">{translations.user.create_name} <span className="text-red-500">*</span></label>
                                         <input
                                             type="text"
                                             name="name"
@@ -368,7 +368,7 @@ export default function Index({ auth, translations }: Props) {
                                         )}
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">{translations.user.create_email}</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">{translations.user.create_email} <span className="text-red-500">*</span></label>
                                         <input
                                             type="email"
                                             name="email"
@@ -385,7 +385,7 @@ export default function Index({ auth, translations }: Props) {
                                         )}
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">{translations.user.create_status}</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">{translations.user.create_status} <span className="text-red-500">*</span></label>
                                         <select
                                             name="is_active"
                                             value={formData.is_active ? '1' : '0'}
@@ -403,7 +403,7 @@ export default function Index({ auth, translations }: Props) {
                                         )}
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">{translations.user.create_group}</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">{translations.user.create_group} <span className="text-red-500">*</span></label>
                                         <select
                                             name="group_role"
                                             value={formData.group_role}

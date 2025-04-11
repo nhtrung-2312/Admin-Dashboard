@@ -23,8 +23,8 @@ return new class extends Migration
             $table->string('group_role', 50)->nullable();
             $table->timestamp('last_login_at')->nullable();
             $table->string('last_login_ip', 40)->nullable();
-            $table->timestamp('created_at')->nullable();
-            $table->timestamp('updated_at')->nullable();
+            $table->timestamp('created_at')->default(now());
+            $table->timestamp('updated_at')->default(now());
         });
     }
 

@@ -336,7 +336,7 @@ export default function Index({ auth, translations }: Props) {
                                         </div>
                                     </div>
                                     {Number(tempFilters.priceFrom) > Number(tempFilters.priceTo) && tempFilters.priceTo && (
-                                        <p className="text-red-500 text-sm mt-1">Giá đến phải lớn hơn hoặc bằng giá từ</p>
+                                        <p className="text-red-500 text-sm mt-1">{translations.product.filter_placeholder_price_from_error}</p>
                                     )}
                                 </div>
                             </div>
@@ -373,7 +373,7 @@ export default function Index({ auth, translations }: Props) {
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                     <h3 className="mt-2 text-sm font-medium text-gray-900">{translations.product.table_no_data}</h3>
-                                    <p className="mt-1 text-sm text-gray-500">Không có sản phẩm nào phù hợp với điều kiện tìm kiếm của bạn.</p>
+                                    <p className="mt-1 text-sm text-gray-500">{translations.product.table_no_data_subtitle}</p>
                                     <div className="mt-6">
                                         <button
                                             onClick={handleReset}
@@ -438,7 +438,7 @@ export default function Index({ auth, translations }: Props) {
                                                                         />
                                                                     ) : (
                                                                         <div className="w-40 h-40 flex items-center justify-center bg-gray-100 rounded">
-                                                                            <span className="text-gray-500 text-sm">Không có hình ảnh</span>
+                                                                            <span className="text-gray-500 text-sm">{translations.product.table_item_no_image}</span>
                                                                         </div>
                                                                     )}
                                                                 </div>
@@ -446,7 +446,7 @@ export default function Index({ auth, translations }: Props) {
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
-                                                        {product.description}
+                                                        {product.description ?? `<${translations.product.table_item_empty_desc}>`}
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         {product.price.toLocaleString('vi-VN')} VNĐ
@@ -494,10 +494,11 @@ export default function Index({ auth, translations }: Props) {
                     </div>
                 </div>
             </div>
-            <EditProductModal
+            <EditProductModal 
                 isOpen={isEditModalOpen}
                 onClose={() => setIsEditModalOpen(false)}
                 product={selectedProduct}
+                translations={translations}
                 onSuccess={handleUpdateSuccess}
             />
         </MainLayout>

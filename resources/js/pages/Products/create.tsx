@@ -221,7 +221,7 @@ export default function Create({ auth, translations }: Props) {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div className="space-y-6">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">{translations.product.create_form_name}</label>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">{translations.product.create_form_name} <span className="text-red-500">*</span></label>
                                             <input
                                                 type="text"
                                                 name="name"
@@ -255,7 +255,7 @@ export default function Create({ auth, translations }: Props) {
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">{translations.product.create_form_price}</label>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">{translations.product.create_form_price} <span className="text-red-500">*</span></label>
                                             <input
                                                 type="text"
                                                 name="price"
@@ -272,7 +272,7 @@ export default function Create({ auth, translations }: Props) {
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">{translations.product.create_form_quantity}</label>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">{translations.product.create_form_quantity} <span className="text-red-500">*</span></label>
                                             <input
                                                 type="text"
                                                 name="quantity"
@@ -289,7 +289,7 @@ export default function Create({ auth, translations }: Props) {
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">{translations.product.create_form_status}</label>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">{translations.product.create_form_status} <span className="text-red-500">*</span></label>
                                             <select
                                                 name="status"
                                                 value={formData.status}
