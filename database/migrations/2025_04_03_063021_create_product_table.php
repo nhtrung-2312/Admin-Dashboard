@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('product', function (Blueprint $table) {
             $table->string('id', 10)->primary();
-            $table->string('name', 255)->unique();
+            $table->string('name', 255);
             $table->string('description', 255)->nullable();
             $table->integer('price')->default(0);
             $table->integer('quantity')->default(0);
@@ -21,6 +21,7 @@ return new class extends Migration
             $table->tinyInteger('status')->default(1)->comment('0: Ngừng bán , 1: Đang bán, 2: Hết hàng');
             $table->timestamp('created_at')->default(now());
             $table->timestamp('updated_at')->default(now());
+            $table->softDeletes();
         });
     }
 
@@ -28,7 +29,7 @@ return new class extends Migration
      * Reverse the migrations.
      */
     public function down(): void
-    {
+    { 
         Schema::dropIfExists('product');
     }
 };

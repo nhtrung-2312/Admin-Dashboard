@@ -15,6 +15,6 @@ return [
 
     'failed' => 'Mật khẩu không chính xác.',
     'password' => 'Mật khẩu không chính xác.',
-    'throttle' => 'Đăng nhập quá nhiều lần. Thử lại sau :second giây.',
+    'throttle' => 'Đăng nhập sai quá nhiều lần. Thử lại sau.',
 
 ];

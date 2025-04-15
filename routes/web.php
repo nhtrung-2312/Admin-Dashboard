@@ -4,12 +4,14 @@ use App\Http\Controllers\Api\UserApi;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\Api\ProductApi;
 use App\Http\Controllers\Api\AuthenticationApi;
+use App\Http\Controllers\Api\RoleApi;
 use Illuminate\Support\Facades\Route;
 
 // API Routes
-Route::prefix('api')->name('api.')->middleware(['auth'])->group(function () {
+Route::prefix('api')->name('api.')->middleware(['auth', 'check_session'])->group(function () {
     // User routes
     Route::prefix('users')->middleware(['permission:view users'])->group(function () {
         Route::get('/', [UserApi::class, 'index'])->name('users.index');
@@ -43,18 +45,37 @@ Route::prefix('api')->name('api.')->middleware(['auth'])->group(function () {
             Route::delete('/{product}', [ProductApi::class, 'destroy'])->name('products.destroy');
         });
     });
+
+    // Role routes
+    Route::prefix('roles')->middleware(['permission:view roles'])->group(function () {
+        Route::get('/', [RoleApi::class, 'index'])->name('roles.index');
+
+        Route::middleware(['permission:create roles'])->group(function () {
+            Route::post('/', [RoleApi::class, 'store'])->name('roles.store');
+        });
+
+        Route::middleware(['permission:edit roles'])->group(function () {
+            Route::put('/{role}', [RoleApi::class, 'update'])->name('roles.update');
+        });
+
+        Route::middleware(['permission:delete roles'])->group(function () {
+            Route::delete('/{role}', [RoleApi::class, 'destroy'])->name('roles.destroy');
+        });
+    });
 });
 
 // Inertia Routes
-Route::middleware(['web', 'auth'])->group(function () {
+Route::middleware(['web', 'auth', 'check_session'])->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
-
 
     Route::prefix('products')->group(function () {
         Route::get('/', [ProductController::class, 'index'])->name('products');
         Route::get('/create', [ProductController::class, 'create'])->name('products.create');
     });
 
+    Route::prefix('roles')->group(function () {
+        Route::get('/', [RoleController::class, 'index'])->name('roles');
+    });
 });
 
 // Auth Routes
@@ -79,3 +100,4 @@ Route::get('/lang/{locale?}', function ($locale = null) {
     }
     return redirect()->back();
 });
+                                      

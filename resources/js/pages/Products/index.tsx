@@ -133,12 +133,27 @@ export default function Index({ auth, translations }: Props) {
         });
     };
 
+    const formatPrice = (value: string) => {
+        const numericValue = value.replace(/[^\d]/g, '');
+        // if (numericValue === '') return '';
+        return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    };
+
     const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        setTempFilters(prev => ({
-            ...prev,
-            [name]: value
-        }));
+
+        if (name === 'priceFrom' || name === 'priceTo') {
+            const numeric = value.replace(/[^\d]/g, '');
+            setTempFilters(prev => ({
+                ...prev,
+                [name]: numeric
+            }));
+        } else {
+            setTempFilters(prev => ({
+                ...prev,
+                [name]: value
+            }));
+        }
     };
 
     const handleSearch = () => {
@@ -177,24 +192,47 @@ export default function Index({ auth, translations }: Props) {
     };
 
     const handleDelete = async (id: string) => {
-        try {
-            if(confirm(translations.product.system_delete_confirm)) {
-                setIsDeleting(true);
-                const response = await axios.delete(`/api/products/${id}`);
-                if (response.status === 200) {
-                    toast.success(translations.product.system_delete_success);
-                    fetchProducts();
+        if (window.confirm(translations.product.system_delete_confirm)) {
+            setIsDeleting(true);
+            try {
+                await axios.delete(`/api/products/${id}`);
+                toast.success(translations.product.system_delete_success);
+
+                // Tải lại dữ liệu sau khi xóa
+                const response = await axios.get('/api/products', {
+                    params: {
+                        page: currentPage,
+                        per_page: perPage,
+                        search: filters.name || null,
+                        status: filters.status || null,
+                        price_from: filters.priceFrom || null,
+                        price_to: filters.priceTo || null
+                    }
+                });
+
+                // Nếu trang hiện tại không còn dữ liệu (đã xóa item cuối cùng của trang), quay về trang trước
+                if (response.data.data.length === 0 && currentPage > 1) {
+                    setCurrentPage(currentPage - 1);
+                    updateUrlAndFetch({
+                        page: currentPage - 1,
+                        per_page: perPage,
+                        search: filters.name || null,
+                        status: filters.status || null,
+                        price_from: filters.priceFrom || null,
+                        price_to: filters.priceTo || null
+                    });
                 } else {
-                    toast.error(translations.product.system_delete_error);
+                    setProducts(response.data.data);
+                    setMeta(response.data.meta);
                 }
+            } catch (error) {
+                if (axios.isAxiosError(error)) {
+                    const message = error.response?.data?.message || translations.product.system_fetch_error;
+                    toast.error(message);
+                }
+            } finally {
+                setIsDeleting(false);
             }
-        } catch (error) {
-            if (axios.isAxiosError(error)) {
-                const message = error.response?.data?.message || translations.product.system_fetch_error;
-                toast.error(message);
-            }
-        } finally {
-            setIsDeleting(false);
         }
     };
 
@@ -238,10 +276,12 @@ export default function Index({ auth, translations }: Props) {
 
     return (
     <> 
+        <Head title={translations.product.head_title}></Head>
+        
         <MainLayout user={auth.user} translations={translations.nav}>
             <ToastContainer
                 position="top-right"
-                autoClose={3000}
+                autoClose={1000}
                 hideProgressBar={false}
                 newestOnTop={false}
                 closeOnClick
@@ -253,11 +293,14 @@ export default function Index({ auth, translations }: Props) {
                 transition={Bounce}
             />
             <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                <div className="max-w-4/5 mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900">
                             <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-2xl font-semibold">{translations.product.list_title}</h2>
+                                <div>
+                                    <h2 className="text-2xl font-semibold">{translations.product.list_title}</h2>
+                                    <p className="text-sm text-gray-500 mt-1">{translations.product.list_subtitle}</p>
+                                </div>
                                 <Button
                                     onClick={() => router.get('/products/create')}
                                     className="bg-blue-500 hover:bg-blue-600 text-white"
@@ -291,7 +334,7 @@ export default function Index({ auth, translations }: Props) {
                                         value={tempFilters.name}
                                         onChange={handleFilterChange}
                                         placeholder={translations.product.filter_placeholder_name}
-                                        className="w-full border rounded-md p-2"
+                                        className="w-full border rounded-md p-2 text-sm leading-tight"
                                     />
                                 </div>
                                 <div>
@@ -300,7 +343,7 @@ export default function Index({ auth, translations }: Props) {
                                         name="status"
                                         value={tempFilters.status}
                                         onChange={handleFilterChange}
-                                        className="w-full border rounded-md p-2"
+                                        className="w-full border rounded-md p-2 text-sm leading-tight"
                                     >
                                         <option value="">{translations.product.filter_placeholder_status_all}</option>
                                         <option value="0">{translations.product.filter_placeholder_status_stop}</option>
@@ -313,24 +356,26 @@ export default function Index({ auth, translations }: Props) {
                                         <div>
                                             <label className="block text-sm text-gray-700 mb-1">{translations.product.filter_price_from}</label>
                                             <input
-                                                type="number"
+                                                type="text"
                                                 min={0}
                                                 name="priceFrom"
-                                                value={tempFilters.priceFrom}
+                                                pattern="\d*"
+                                                value={formatPrice(tempFilters.priceFrom)}
                                                 onChange={handleFilterChange}
-                                                className="w-full border rounded-md p-2"
+                                                className="w-full border rounded-md p-2 text-sm leading-tight"
                                                 placeholder={translations.product.filter_placeholder_price_from}
                                             />
                                         </div>
                                         <div>
                                             <label className="block text-sm text-gray-700 mb-1">{translations.product.filter_price_to}</label>
                                             <input
-                                                type="number"
+                                                type="text"
                                                 min={Number(tempFilters.priceFrom) || 0}
                                                 name="priceTo"
-                                                value={tempFilters.priceTo}
+                                                pattern="\d*"
+                                                value={formatPrice(tempFilters.priceTo)}
                                                 onChange={handleFilterChange}
-                                                className="w-full border rounded-md p-2"
+                                                className="w-full border rounded-md p-2 text-sm leading-tight"
                                                 placeholder={translations.product.filter_placeholder_price_to}
                                             />
                                         </div>

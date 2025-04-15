@@ -15,6 +15,6 @@ return [
 
     'failed' => 'Password is incorrect.',
     'password' => 'Password is incorrect.',
-    'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
+    'throttle' => 'Too many login attempts. Please try again later.',
     'error' => 'An error occured, please try again.',
 ];

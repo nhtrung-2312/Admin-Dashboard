@@ -1,6 +1,8 @@
 <?php 
 
 return [
+    "head_title" => "User Management",
+
     "create_title" => "Add new user",
     "create_subtitle" => "Fill in the details to add a new user",
     "create_name" => "Name",

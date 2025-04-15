@@ -10,23 +10,34 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
 
 class AuthenticationApi extends Controller
 {
     public function login(LoginRequest $request)
     {
         try {
-            $credentials = $request->validated();
-            $remember = $request->boolean('remember_token', false);
+            $credentials = $request->only('email', 'password');
+            $remember = $request->boolean('remember', false);
+
+            $ipAddress = $request->ip();
+            $key = 'login:' . $ipAddress;
+
+            if (RateLimiter::tooManyAttempts($key, 5)) {
+                $seconds = RateLimiter::availableIn($key);
+                return response()->json([
+                    'retry_after' => $seconds
+                ], 429);
+            }
 
             if (Auth::attempt($credentials, $remember)) {
                 $user = Auth::user();
 
-                if ($user->is_delete) {
+                if ($user->is_delete == 1 || $user->is_active == 0) {
                     Auth::logout();
                     return response()->json([
-                        'message' => 'Tài khoản đã bị xóa'
-                    ], 406);
+                        'message' => __('auth.failed')
+                    ], 405);
                 }
 
                 $user->assignRole($user->group_role);
@@ -36,15 +47,13 @@ class AuthenticationApi extends Controller
                     'last_login_ip' => $request->ip(),
                 ];
 
-                if ($remember) {
-                    $updateData['remember_token'] = Str::random(50);
-                }
-
                 DB::table('mst_users')
                     ->where('id', $user->id)
                     ->update($updateData);
 
                 $request->session()->regenerate();
+
+                RateLimiter::clear($key);
 
                 return response()->json([
                     'status' => true,
@@ -52,9 +61,11 @@ class AuthenticationApi extends Controller
                 ], 200);
             }
 
+            RateLimiter::hit($key, 60);
+
             return response()->json([
-                'message' => 'Thông tin đăng nhập không chính xác'
-            ], 401);
+                'message' => __('auth.failed')
+            ], 405);
 
         } catch (\Exception $e) {
             Log::error('Lỗi khi đăng nhập: ' . $e->getMessage());
@@ -66,27 +77,19 @@ class AuthenticationApi extends Controller
 
     public function logout(Request $request)
     {
-        try {
-            if (Auth::check()) {
-                DB::table('mst_users')
-                    ->where('id', Auth::id())
-                    ->update(['remember_token' => null]);
-            }
+        $userId = Auth::id();
 
-            Auth::logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
-            return response()->json([
-                'status' => true,
-                'redirect' => '/login'
-            ], 200);
+        DB::table('mst_users')
+        ->where('id', $userId)
+        ->update(['remember_token' => null]);
 
-        } catch (\Exception $e) {
-            Log::error('Lỗi khi đăng xuất: ' . $e->getMessage());
-            return response()->json([
-                'message' => 'Lỗi hệ thống'
-            ], 500);
-        }
+        return response()->json([
+            'status' => true,
+            'redirect' => '/login'
+        ], 200);
     }
 }

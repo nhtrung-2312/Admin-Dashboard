@@ -34,7 +34,7 @@ export default function MainLayout({ children, user, translations }: MainLayoutP
     return (
         <div className="min-h-screen bg-gray-100">
             <nav className="bg-white border-b border-gray-200">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="max-w-4/5 mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-16">
                         <div className="flex">
                             <div className="flex-shrink-0 flex items-center">
@@ -56,12 +56,22 @@ export default function MainLayout({ children, user, translations }: MainLayoutP
                                 <Link
                                     href={route('products')}
                                     className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                                        route().current('products')
+                                        route().current('products') || route().current('products.create')
                                             ? 'border-indigo-500 text-gray-900'
                                             : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                                     }`}
                                 >
                                     {translations.products}
+                                </Link>
+                                <Link
+                                    href={route('roles')}
+                                    className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                                        route().current('roles')
+                                            ? 'border-indigo-500 text-gray-900'
+                                            : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                                    }`}
+                                >
+                                    {translations.roles}
                                 </Link>
                             </div>
                         </div>

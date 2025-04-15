@@ -1,6 +1,8 @@
 <?php 
 
 return [
+    "head_title" => "Quản lý người dùng",
+
     "create_title" => "Thêm người dùng mới",
     "create_subtitle" => "Điền thông tin người dùng mới",
     "create_placeholder_name" => "example...",

@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react';
-import { useForm } from '@inertiajs/react';
+import { useState, useRef, useEffect } from 'react';
+import { usePage } from '@inertiajs/react';
 import { Head } from '@inertiajs/react';
 import {
     Card,
@@ -16,7 +16,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { Globe } from 'lucide-react';
 import axios from 'axios';
-import { toast } from 'react-toastify';
+import { Bounce, toast, ToastContainer } from 'react-toastify';
 
 interface Props {
     translations: Record<string, any>;
@@ -25,11 +25,37 @@ interface Props {
 export default function Login({ translations }: Props) {
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [processing, setProcessing] = useState(false);
+    const [throttleTime, setThrottleTime] = useState(0);
+    const cooldownTimer = useRef<NodeJS.Timeout | null>(null);
     const [formData, setFormData] = useState({
         email: '',
         password: '',
-        remember_token: false
+        remember: false
     });
+
+    const startCooldown = (seconds: number) => {
+        setThrottleTime(seconds);
+    
+        if (cooldownTimer.current) {
+            clearInterval(cooldownTimer.current);
+        }
+    
+        cooldownTimer.current = setInterval(() => {
+            setThrottleTime(prev => {
+                if (prev <= 1) {
+                    clearInterval(cooldownTimer.current!);
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+    };
+
+    useEffect(() => {
+        return () => {
+            if (cooldownTimer.current) clearInterval(cooldownTimer.current);
+        };
+    }, []);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -42,12 +68,14 @@ export default function Login({ translations }: Props) {
     const handleCheckboxChange = (checked: boolean) => {
         setFormData(prev => ({
             ...prev,
-            remember_token: checked
+            remember: checked
         }));
     };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        if (throttleTime) return;
+        
         setProcessing(true);
         setErrors({});
 
@@ -60,36 +88,29 @@ export default function Login({ translations }: Props) {
                 }
             });
 
-            if (response.data.status && response.data.redirect) {
-                window.location.href = response.data.redirect;
+            if(response.data.redirect) {
+                window.location.href = '/';
             }
 
         } catch (error: any) {
             if (error.response) {
-                switch (error.response.status) {
-                    case 401:
-                        setErrors({
-                            password: translations.auth.failed
-                        });
-                        break;
-                    case 406:
-                        setErrors({
-                            password: translations.auth.failed
-                        });
+                const { status, data } = error.response;
+                switch (status) {
+                    case 405:
+                        setErrors({ password: translations.auth.failed });
                         break;
                     case 422:
-                        setErrors(error.response.data.errors);
+                        setErrors(data.errors);
                         break;
-                    case 500:
-                        setErrors({
-                            email: translations.system.fail
-                        });
+                    case 429:
+                        const retryAfter = data?.retry_after ?? 60;
+                        startCooldown(retryAfter);
                         break;
                     default:
-                        setErrors({
-                            email: translations.system.fail
-                        });
+                        setErrors({ email: translations.system.fail });
                 }
+            } else {
+                setErrors({ email: translations.system.fail });
             }
         } finally {
             setProcessing(false);
@@ -99,6 +120,17 @@ export default function Login({ translations }: Props) {
     return (
         <>
             <Head title={translations.login.title} />
+
+            <ToastContainer
+                    position="top-right"
+                    autoClose={1000}
+                    hideProgressBar={false}
+                    newestOnTop={false}
+                    closeOnClick
+                    rtl={false}
+                    theme="light"
+                    transition={Bounce}
+                />
 
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50">
                 <div className="absolute top-4 right-4">
@@ -119,6 +151,17 @@ export default function Login({ translations }: Props) {
 
                     <form onSubmit={handleSubmit}>
                         <CardContent className="space-y-4">
+                            {throttleTime > 0 && (
+                                <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-center">
+                                    <p className="text-red-600 font-medium">
+                                        {translations.auth.throttle}
+                                    </p>
+                                    <p className="text-red-500 text-sm mt-1">
+                                        {translations.auth.retry_after} {throttleTime}s
+                                    </p>
+                                </div>
+                            )}
+                            
                             <div className="space-y-2">
                                 <Label htmlFor="email" className="text-sm font-medium text-gray-700">
                                     {translations.login.email}
@@ -172,7 +215,7 @@ export default function Login({ translations }: Props) {
                             <div className="flex items-center space-x-2 mt-2 mb-2">
                                 <Checkbox
                                     id="remember"
-                                    checked={formData.remember_token}
+                                    checked={formData.remember}
                                     onCheckedChange={handleCheckboxChange}
                                     className="bg-white/50 border-gray-500 rounded-lg"
                                 />
@@ -186,7 +229,7 @@ export default function Login({ translations }: Props) {
                             <Button
                                 type="submit"
                                 className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md hover:shadow-lg transition-all duration-200 rounded-lg py-2"
-                                disabled={processing}
+                                disabled={processing || throttleTime > 0}
                             >
                                 {processing ? 'Processing...' : translations.login.login}
                             </Button>

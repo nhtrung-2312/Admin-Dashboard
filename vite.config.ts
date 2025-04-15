@@ -2,6 +2,7 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import laravel from 'laravel-vite-plugin';
 import { resolve } from 'node:path';
+import { config } from 'node:process';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
@@ -9,7 +10,7 @@ export default defineConfig({
         host: '0.0.0.0',
         port: 5173,
         hmr: {
-            host: '192.168.90.113',
+            host: 'localhost',
             protocol: 'ws'
         }
     },

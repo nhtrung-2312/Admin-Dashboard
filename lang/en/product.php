@@ -1,6 +1,8 @@
 <?php
 
 return [
+    "head_title" => "Product Management",
+
     "list_title" => "Product List",
     "list_subtitle" => "Showing all the product",
     "list_button_add" => "Add new product",
@@ -26,6 +28,8 @@ return [
     "table_action" => "Action",
     "table_desc" => "Description",
     "table_price" => "Price",
+    "table_image" => "Image",
+    "table_quantity" => "Quantity",
     "table_item_sell" => "Currently Selling",
     "table_item_stop" => "Stopped Selling",
     "table_item_out" => "Out of Stock",

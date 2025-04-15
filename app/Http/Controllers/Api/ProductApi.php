@@ -20,7 +20,6 @@ class ProductApi extends Controller
             // Step 1: Get all products
             $query = Product::query();
     
-    
             // Step 2: Filter by status
             if ($request->has('status')) {
                 $status = $request->input('status');
@@ -89,11 +88,7 @@ class ProductApi extends Controller
             }
 
             //Step 3: Generate ID
-            do {
-                $id = strtoupper(substr($validatedData['name'], 0, 1)) . fake()->numerify('#########');
-            } while (Product::where('id', $id)->exists());
-
-            $validatedData['id'] = $id;
+            $validatedData['id'] = $this->generateValidId($validatedData['name']);
 
             //Step 4: Upload image if exists
             if ($request->hasFile('image')) {
@@ -114,65 +109,103 @@ class ProductApi extends Controller
 
         } catch (\Exception $e) {
             //Step 6: Return error response
+            Log::error($e);
             return response()->json([
                 'error' => $e->getMessage()
             ], 500);
         }
     }
- 
+
+    public function generateValidId($name)
+    {
+        $validateName = preg_replace('/[^a-zA-Z]/', '', $name);
+        $first = strtoupper($validateName[0] ?? 'X');
+
+        $usedNumbers = Product::where('id', 'like', "{$first}%")
+            ->pluck('id')
+            ->map(fn($id) => (int) substr($id, 1))
+            ->sort()
+            ->values();
+    
+        $nextNumber = 1;
+        foreach ($usedNumbers as $number) {
+            if ($number !== $nextNumber) break;
+            $nextNumber++;
+        }
+
+        $newId = $first . str_pad($nextNumber, 8, '0', STR_PAD_LEFT);
+
+        return $newId;
+    }
+    
     /**
      * Update the specified resource in storage.
      */
     public function update(ProductRequest $request, string $id)
     {
-
+        // Step 1: Tìm sản phẩm theo ID
         $product = Product::find($id);
+    
         if (!$product) {
             return response()->json(['message' => 'Sản phẩm không tồn tại'], 404);
         }
+    
         try {
-            //Check for upload folder and create if not exists
-            $uploadPath = public_path('uploads');
-            if (!file_exists($uploadPath)) {
-                mkdir($uploadPath, 0755, true);
+            // Step 2: Validate dữ liệu
+            $validated = $request->validated();
+    
+            // Step 3: Xử lý mô tả nếu null hoặc rỗng
+            $desc = $validated['description'] ?? null;
+            if ($desc === 'null' || $desc === '') {
+                $desc = null;
             }
-
-            $credentials = $request->validated();
-
-            //Step 1: Get data from request
-            $desc = $request->input('description') === 'null' || $request->input('description') === '' ? null : $request->input('description');
-
+    
+            // Step 4: Chuẩn bị dữ liệu cập nhật
             $data = [
-                'name' => $request->input('name'),
+                'name' => $validated['name'],
                 'description' => $desc,
-                'price' => $request->input('price'),
-                'quantity' => $request->input('quantity'),
-                'status' => $request->input('status'),
+                'price' => $validated['price'],
+                'quantity' => $validated['quantity'],
+                'status' => $validated['status'],
                 'updated_at' => now(),
             ];
-
-            //Step 2: Upload image if exists
+    
+            // Step 5: Xử lý ảnh nếu có
             if ($request->hasFile('image')) {
+                $uploadPath = public_path('uploads');
+    
+                if (!file_exists($uploadPath)) {
+                    mkdir($uploadPath, 0755, true);
+                }
+    
+                // Xóa ảnh cũ nếu có
+                if (!empty($product->image_url)) {
+                    $oldImagePath = $uploadPath . '/' . $product->image_url;
+                    if (file_exists($oldImagePath)) {
+                        unlink($oldImagePath);
+                    }
+                }
+    
                 $image = $request->file('image');
-                $imageName = $data['name'] . '_' . time() . '.' . $image->getClientOriginalExtension();
+                $sanitizedName = preg_replace('/[^a-zA-Z0-9_-]/', '_', $validated['name']);
+                $imageName = $sanitizedName . '_' . time() . '.' . $image->getClientOriginalExtension();
                 $image->move($uploadPath, $imageName);
                 $data['image_url'] = $imageName;
             }
-
-            //Step 3: Update products
+    
+            // Step 6: Cập nhật sản phẩm
             $product->update($data);
-
-            //Step 4: Return response
-            return response()->json([
-            ], 200);
-
+    
+            return response()->json([], 200);
+    
         } catch (\Exception $e) {
-            //Step 5: Return error response
+            Log::error('Lỗi khi cập nhật sản phẩm: ' . $e->getMessage());
+    
             return response()->json([
-                'error' => $e->getMessage()
+                'message' => 'Đã xảy ra lỗi khi cập nhật sản phẩm. Vui lòng thử lại.'
             ], 500);
         }
-    }
+    }    
  
     /**
      * Remove the specified resource from storage.

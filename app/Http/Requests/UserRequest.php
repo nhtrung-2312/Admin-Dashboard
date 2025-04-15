@@ -25,7 +25,7 @@ class UserRequest extends FormRequest
         $rules = [
             'name' => 'required|string|max:255',
             'is_active' => 'required|boolean',
-            'group_role' => 'required|string|in:admin,user',
+            'group_role' => 'required|string',
         ];
 
         // Nếu là request update
@@ -36,14 +36,14 @@ class UserRequest extends FormRequest
             if ($this->input('email') !== $this->route('user')->email) {
                 $rules['email'] = [
                     'required',
-                    'email',
+                    'email:rfc,dns',
                     'max:255',
                     Rule::unique('mst_users')->ignore($userId),
                 ];
             }
         } else {
             // Nếu là request create
-            $rules['email'] = 'required|email|max:255|unique:mst_users';
+            $rules['email'] = 'required|email:rfc,dns|max:255|unique:mst_users';
         }
 
         return $rules;
@@ -60,7 +60,6 @@ class UserRequest extends FormRequest
             'email.max' => __('validation.max.string', ['attribute' => __('user.create_email'), 'max' => 255]),
             'email.unique' => __('validation.unique', ['attribute' => __('user.create_email')]),
             'group_role.required' => __('validation.required', ['attribute' => __('user.create_group')]),
-            'group_role.in' => __('validation.in', ['attribute' => __('user.create_group')]),
             'is_active.required' => __('validation.required', ['attribute' => __('user.create_status')]),
             'is_active.boolean' => __('validation.boolean', ['attribute' => __('user.create_status')]),
         ];

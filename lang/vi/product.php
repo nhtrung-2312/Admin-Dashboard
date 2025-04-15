@@ -1,6 +1,8 @@
 <?php
 
 return [
+    "head_title" => "Quản lý sản phẩm",
+
     "list_title" => "Danh sách sản phẩm",
     "list_subtitle" => "Hiển thị tất cả sản phẩm",
     "list_button_add" => "Thêm sản phẩm mới",
@@ -26,6 +28,8 @@ return [
     "table_action" => "Thao tác",
     "table_desc" => "Mô tả",
     "table_price" => "Giá",
+    "table_image" => "Hình ảnh",
+    "table_quantity" => "Số lượng",
     "table_item_sell" => "Đang bán",
     "table_item_stop" => "Ngừng bán",
     "table_item_out" => "Hết hàng",

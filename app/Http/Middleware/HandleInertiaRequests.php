@@ -56,9 +56,12 @@ class HandleInertiaRequests extends Middleware
                     'roles' => $request->user()->getRoleNames()->toArray(),
                 ] : null,
             ],
-            'flash' => [
-                'message' => fn () => $request->session()->get('message'),
-                'error' => fn () => $request->session()->get('error'),
+            'flash' => fn () => [
+                'message' => $request->session()->get('message'),
+                'error' => $request->session()->get('error'),
+                'success' => $request->session()->get('success'),
+                'warning' => $request->session()->get('warning'),
+                'info' => $request->session()->get('info'),
             ],
             'ziggy' => fn (): array => [
                 ...(new Ziggy)->toArray(),

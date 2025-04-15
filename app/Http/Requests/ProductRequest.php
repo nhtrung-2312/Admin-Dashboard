@@ -20,7 +20,7 @@ class ProductRequest extends FormRequest
             'description' => 'nullable|string|max:255',
             'status' => 'required|in:0,1,2',
             'quantity' => 'required|numeric|min:0|max:2147483647', // int type
-            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'image' => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
             'image_url' => 'nullable|string'
         ];
     }
@@ -34,17 +34,39 @@ class ProductRequest extends FormRequest
             'price.required' => __('validation.required', ['attribute' => __('product.table_price')]),
             'price.numeric' => __('validation.numeric', ['attribute' => __('product.table_price')]),
             'price.min' => __('validation.min.numeric', ['attribute' => __('product.table_price'), 'min' => 0]),
-            'price.max' => __('validation.max.numeric', ['attribute' => 'price', 'max' => 2147483647]),
-            'description.max' => __('validation.max.string', ['attribute' => 'description', 'max' => 255]),
+            'price.max' => __('validation.max.numeric', ['attribute' => __('product.table_price'), 'max' => 2147483647]),
+            'description.max' => __('validation.max.string', ['attribute' => __('product.table_desc'), 'max' => 255]),
             'status.required' => __('validation.required', ['attribute' => __('product.table_status')]),
             'status.in' => __('validation.in', ['attribute' => __('product.table_status')]),
-            'image.image' => __('validation.image', ['attribute' => 'image']),
-            'image.mimes' => __('validation.mimes', ['attribute' => 'image', 'values' => 'jpeg,png,jpg']),
-            'image.max' => __('validation.max.file', ['attribute' => 'image', 'max' => 2048]),
-            'quantity.required' => __('validation.required', ['attribute' => 'quantity']),
-            'quantity.numeric' => __('validation.numeric', ['attribute' => 'quantity']),
-            'quantity.min' => __('validation.min.numeric', ['attribute' => 'quantity', 'min' => 0]),
-            'quantity.max' => __('validation.max.numeric', ['attribute' => 'quantity', 'max' => 2147483647])
+            'image.mimes' => __('validation.mimes', ['attribute' => __('product.table_image'), 'values' => 'jpeg,png,jpg']),
+            'image.max' => __('validation.max.file', ['attribute' => __('product.table_image'), 'max' => 2048]),
+            'image.image' => __('validation.image', ['attribute' => __('product.table_image')]),
+            'quantity.required' => __('validation.required', ['attribute' => __('product.table_quantity')]),
+            'quantity.numeric' => __('validation.numeric', ['attribute' => __('product.table_quantity')]),
+            'quantity.min' => __('validation.min.numeric', ['attribute' => __('product.table_quantity'), 'min' => 0]),
+            'quantity.max' => __('validation.max.numeric', ['attribute' => __('product.table_quantity'), 'max' => 2147483647])
         ];
+    }
+
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            $file = $this->file('image');
+    
+            if ($file) {
+                $allowedMimes = ['image/jpeg', 'image/png'];
+                $allowedExts  = ['jpg', 'jpeg', 'png'];
+    
+                $mime = $file->getMimeType();
+                $ext  = strtolower($file->getClientOriginalExtension());
+    
+                if (!in_array($mime, $allowedMimes) || !in_array($ext, $allowedExts)) {
+                    $validator->errors()->add(
+                        'image',
+                        __('validation.mimes', ['attribute' => 'image', 'values' => 'jpeg,png,jpg'])
+                    );
+                }
+            }
+        });
     }
 }

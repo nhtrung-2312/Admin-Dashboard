@@ -19,7 +19,11 @@ class RoleSeeder extends Seeder
             'view products',
             'create products',
             'edit products',
-            'delete products'
+            'delete products',
+            'view roles',
+            'create roles',
+            'edit roles',
+            'delete roles',
         ];
 
         foreach ($permissions as $permission) {
@@ -27,12 +31,12 @@ class RoleSeeder extends Seeder
         }
 
         // Tạo roles và gán permissions
-        $admin = Role::create(['name' => 'admin']);
+        $admin = Role::create(['name' => 'admin', 'is_system' => 1]);
         $admin->givePermissionTo($permissions);
 
         $manager = Role::create(['name' => 'manager']);
         $manager->givePermissionTo(['view products', 'view users']);
 
-        $user = Role::create(['name' => 'user']);
+        $user = Role::create(['name' => 'user', 'is_system' => 1]);
     }
 } 

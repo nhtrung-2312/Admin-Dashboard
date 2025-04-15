@@ -1,7 +1,7 @@
 import { User } from '@/types';
 import MainLayout from '@/layouts/main-layout';
 import { Button } from '@/components/ui/button';
-import { Link } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { useEffect, useMemo, useState } from 'react';
 import TablePagination from '@/components/TablePagination';
 import axios from 'axios';
@@ -10,21 +10,30 @@ import 'react-toastify/ReactToastify.css'
 import { router } from '@inertiajs/react'
 import { usePage } from '@inertiajs/react'
 import { debounce } from 'lodash';
+import EditUserModal from '@/components/EditUserModal';
 
 interface Props {
     auth: {
         user: User;
     },
     translations: Record<string, any>;
+    roles: string[];
 }
 
 interface UserData {
     id: number;
     name: string;
     email: string;
+    avatar?: string;
+    email_verified_at: string | null;
+    created_at: string;
+    updated_at: string;
     group_role: string;
+    permissions: string[];
     is_active: boolean;
     is_delete: boolean;
+    last_login_at: string | null;
+    roles: string[];
 }
 
 interface PaginationMeta {
@@ -49,7 +58,7 @@ interface FormData {
     group_role: string;
 }
 
-export default function Index({ auth, translations }: Props) {
+export default function Index({ auth, translations, roles }: Props) {
     const searchParams = new URLSearchParams(window.location.search);
 
     const [currentPage, setCurrentPage] = useState<number>(Number(searchParams.get('page')) || 1);
@@ -257,44 +266,22 @@ export default function Index({ auth, translations }: Props) {
 
     const handleEdit = (user: UserData) => {
         setEditingUser(user);
-        setEditFormData({
-            name: user.name,
-            email: user.email,
-            is_active: user.is_active ? 1 : 0,
-            group_role: user.group_role
-        });
         setIsEditModalOpen(true);
     };
 
-    const handleUpdate = async (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        if (!editingUser) return;
-
-        try {
-            await axios.put(`/api/users/${editingUser.id}`, editFormData);
-            toast.success(translations.user.system_update_success);
-            setIsEditModalOpen(false);
-
-            // Tải lại danh sách
-            const response = await axios.get('/api/users', {
-                params: {
-                    page: currentPage,
-                    per_page: perPage,
-                    status: statusFilter,
-                    role: roleFilter,
-                    search: searchTerm
-                }
-            });
-            setUsers(response.data.data);
-            setMeta(response.data.meta);
-        } catch (error: any) {
-            if (error.response?.status === 422) {
-                setErrors(error.response.data.errors || {});
-                toast.error(translations.user.system_update_missig);
-            } else {
-                toast.error(translations.user.system_update_error);
+    const handleEditSuccess = async () => {
+        // Tải lại danh sách sau khi cập nhật thành công
+        const response = await axios.get('/api/users', {
+            params: {
+                page: currentPage,
+                per_page: perPage,
+                status: statusFilter,
+                role: roleFilter,
+                search: searchTerm
             }
-        }
+        });
+        setUsers(response.data.data);
+        setMeta(response.data.meta);
     };
 
     useEffect(() => {
@@ -323,6 +310,9 @@ export default function Index({ auth, translations }: Props) {
     }, [currentPage, perPage, statusFilter, roleFilter, searchTerm]);
 
     return (
+        <>  
+        <Head title={translations.user.head_title} />
+
         <MainLayout user={auth.user} translations={translations.nav}>
             <ToastContainer
                 position="top-right"
@@ -338,7 +328,7 @@ export default function Index({ auth, translations }: Props) {
                 transition={Bounce}
             />
             <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                <div className="max-w-4/5 mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900">
                             <section hidden={!canCreate}>
@@ -413,8 +403,9 @@ export default function Index({ auth, translations }: Props) {
                                             }`}
                                             disabled={!canCreate}
                                         >
-                                            <option value="user">User</option>
-                                            <option value="admin">Admin</option>
+                                            {roles.map((role) => (
+                                                <option key={role} value={role}>{role}</option>
+                                            ))}
                                         </select>
                                         {errors.group_role && (
                                             <p className="mt-1 text-sm text-red-500">{errors.group_role}</p>
@@ -483,8 +474,9 @@ export default function Index({ auth, translations }: Props) {
                                             onChange={handleRoleChange}
                                         >
                                             <option value="">{translations.user.list_filter_placeholder_all}</option>
-                                            <option value="admin">Admin</option>
-                                            <option value="user">User</option>
+                                            {roles.map((role) => (
+                                                <option key={role} value={role}>{role}</option>
+                                            ))}
                                         </select>
                                     </div>
                                 </div>
@@ -587,97 +579,20 @@ export default function Index({ auth, translations }: Props) {
                     </div>
                 </div>
             </div>
-            {isEditModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 text-black">
-                    <div className="bg-white p-6 rounded-lg w-[500px]">
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-xl font-semibold">{translations.user.update_title}</h2>
-                            <button
-                                onClick={() => setIsEditModalOpen(false)}
-                                className="text-gray-500 hover:text-gray-700"
-                            >
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        </div>
-
-                        <form onSubmit={handleUpdate} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">{translations.user.update_name}</label>
-                                <input
-                                    type="text"
-                                    name="name"
-                                    value={editFormData.name}
-                                    onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
-                                    className={`w-full px-3 py-2 border rounded-md ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
-                                />
-                                {errors.name && (
-                                    <p className="mt-1 text-sm text-red-500">
-                                        {Array.isArray(errors.name) ? errors.name[0] : errors.name}
-                                    </p>
-                                )}
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">{translations.user.update_email}</label>
-                                <input
-                                    type="email"
-                                    name="email"
-                                    value={editFormData.email}
-                                    onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
-                                    className={`w-full px-3 py-2 border rounded-md ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
-                                />
-                                {errors.email && (
-                                    <p className="mt-1 text-sm text-red-500">{errors.email}</p>
-                                )}
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">{translations.user.update_status}</label>
-                                <select
-                                    name="is_active"
-                                    value={editFormData.is_active ? '1' : '0'}
-                                    onChange={(e) => setEditFormData({ ...editFormData, is_active: parseInt(e.target.value) })}
-                                    className={`w-full px-3 py-2 border rounded-md ${errors.is_active ? 'border-red-500' : 'border-gray-300'}`}
-                                >
-                                    <option value="1">{translations.user.update_status_placeholder_active}</option>
-                                    <option value="0">{translations.user.update_status_placeholder_inactive}</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">{translations.user.update_group}</label>
-                                <select
-                                    name="group_role"
-                                    value={editFormData.group_role}
-                                    onChange={(e) => setEditFormData({ ...editFormData, group_role: e.target.value })}
-                                    className={`w-full px-3 py-2 border rounded-md ${errors.group_role ? 'border-red-500' : 'border-gray-300'}`}
-                                >
-                                    <option value="user">User</option>
-                                    <option value="admin">Admin</option>
-                                </select>
-                            </div>
-
-                            <div className="flex justify-end gap-2 mt-4">
-                                <Button
-                                    type="button"
-                                    className="bg-red-500 hover:bg-red-600 text-white"
-                                    onClick={() => setIsEditModalOpen(false)}
-                                >
-                                    {translations.user.update_button_cancel}
-                                </Button>
-                                <Button
-                                    type="submit"
-                                    className="bg-blue-500 hover:bg-blue-600 text-white"
-                                >
-                                    {translations.user.update_button_accept}
-                                </Button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+            {isEditModalOpen && editingUser && (
+                <EditUserModal
+                    user={editingUser}
+                    roles={roles}
+                    isOpen={isEditModalOpen}
+                    onClose={() => {
+                        setIsEditModalOpen(false);
+                        setEditingUser(null);
+                    }}
+                    onSuccess={handleEditSuccess}
+                    translations={translations}
+                />
             )}
         </MainLayout>
+        </>
     );
 }

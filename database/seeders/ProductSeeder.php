@@ -12,6 +12,8 @@ class ProductSeeder extends Seeder
      */
     public function run(): void
     {
-        Product::factory(50)->create();
+        for ($i = 0; $i < 50; $i++) {
+            \App\Models\Product::factory()->create();
+        }
     }
 }

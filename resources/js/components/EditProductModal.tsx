@@ -60,15 +60,6 @@ export default function EditProductModal({ isOpen, onClose, product, onSuccess, 
         return true;
     };
 
-    const validatePrice = (value: string) => {
-        const numericValue = value.replace(/[^\d]/g, '');
-        const numValue = parseInt(numericValue);
-        if (isNaN(numValue) || numValue < 0) {
-            return false;
-        }
-        return true;
-    };
-
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
 
@@ -315,22 +306,22 @@ export default function EditProductModal({ isOpen, onClose, product, onSuccess, 
                                         </div>
                                     ) : (
                                         <>
-                                            <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                            </svg>
-                                            <div className="flex text-sm text-gray-600">
-                                                <label className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none">
-                                                    <span>{translations.product.edit_form_placeholder_image_title}</span>
-                                                    <input
-                                                        type="file"
-                                                        onChange={handleImageChange}
-                                                        accept="image/*"
-                                                        className="sr-only"
-                                                    />
-                                                </label>
-                                                <p className="pl-1">{translations.product.edit_form_placeholder_image_subtitle}</p>
-                                            </div>
-                                        </>
+                                        <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                            <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
+                                        <div className="flex text-sm text-gray-600 items-center justify-center">
+                                            <label className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none">
+                                                <p>{translations.product.create_form_placeholder_image_title}</p>
+                                                <input
+                                                    type="file"
+                                                    onChange={handleImageChange}
+                                                    accept="image/*"
+                                                    className="sr-only"
+                                                />
+                                            </label>
+                                        </div>
+                                        <p className="text-xs text-gray-500">{translations.product.create_form_placeholder_image_subtitle}</p>
+                                    </>
                                     )}
                                 </div>
                             </div>
