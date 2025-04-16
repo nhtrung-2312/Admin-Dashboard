@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Inertia\Inertia;
 
 class CheckSession
 {
@@ -17,19 +18,25 @@ class CheckSession
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if(Auth::check()) {
-            $user = Auth::user();
-
-            if ($user->is_deleted == 1 || $user->is_active == 0) {
-                Auth::logout();
-                $request->session()->invalidate();
-                $request->session()->regenerateToken();
-                
-                return redirect()->route('login')->with('error', 'This account have been blocked, try login again');
-            }
-            return $next($request);
+        if (!Auth::check()) {
+            return redirect('/login')->with('message', __('auth.session_expired'));
         }
+    
+        $user = Auth::user()->fresh();
 
-        return redirect()->route('login')->with('error', 'An error occured, please login again');
+        $message = null;
+    
+        if ($user->is_delete) {
+            $message = __('auth.deleted');
+        } elseif (!$user->is_active) {
+            $message = __('auth.locked');
+        }
+    
+        if ($message) {
+            Auth::logout();
+            return redirect('/login')->with('message', $message);
+        }
+    
+        return $next($request);
     }
 }

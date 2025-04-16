@@ -68,7 +68,9 @@ class ProductApi extends Controller
                 ]
             ], 200);
         } catch (\Exception $e) {
-            return response()->json([], 500);
+            return response()->json([
+                'message' => __('product.system_fetch_error')
+            ], 500);
         }
     }
  
@@ -105,35 +107,37 @@ class ProductApi extends Controller
             Product::create($validatedData);
 
             //Step 5: Return response
-            return response()->json([], 200);
+            return response()->json([
+                'message' => __('product.system_create_success')
+            ], 200);
 
         } catch (\Exception $e) {
             //Step 6: Return error response
-            Log::error($e);
+            // Log::error($e->getMessage());
             return response()->json([
-                'error' => $e->getMessage()
+                'message' => __('product.system_create_error')
             ], 500);
         }
     }
 
+    //Generate a valid Id base on first letter and number
     public function generateValidId($name)
     {
+        //Keep the character base on regex, remove the rest
         $validateName = preg_replace('/[^a-zA-Z]/', '', $name);
+
+        //Get the first letter, default on 'X'
         $first = strtoupper($validateName[0] ?? 'X');
 
+        //Find the product_id match the first letter, then get the last number
         $usedNumbers = Product::where('id', 'like', "{$first}%")
             ->pluck('id')
             ->map(fn($id) => (int) substr($id, 1))
             ->sort()
             ->values();
-    
-        $nextNumber = 1;
-        foreach ($usedNumbers as $number) {
-            if ($number !== $nextNumber) break;
-            $nextNumber++;
-        }
 
-        $newId = $first . str_pad($nextNumber, 8, '0', STR_PAD_LEFT);
+        //Create id with correct format
+        $newId = $first . str_pad($userdNumbers, 8, '0', STR_PAD_LEFT);
 
         return $newId;
     }
@@ -143,24 +147,27 @@ class ProductApi extends Controller
      */
     public function update(ProductRequest $request, string $id)
     {
-        // Step 1: Tìm sản phẩm theo ID
+        // Step 1: Try to validate the updated product
         $product = Product::find($id);
     
+        //If not, then return error
         if (!$product) {
-            return response()->json(['message' => 'Sản phẩm không tồn tại'], 404);
+            return response()->json([
+                'message' => __('product.system_product_not_exist') 
+            ], 404);
         }
     
         try {
-            // Step 2: Validate dữ liệu
+            // Step 2: Validate the request
             $validated = $request->validated();
     
-            // Step 3: Xử lý mô tả nếu null hoặc rỗng
+            //If desc empty, set to null
             $desc = $validated['description'] ?? null;
             if ($desc === 'null' || $desc === '') {
                 $desc = null;
             }
     
-            // Step 4: Chuẩn bị dữ liệu cập nhật
+            // Step 4: Create new data with the validated request
             $data = [
                 'name' => $validated['name'],
                 'description' => $desc,
@@ -170,15 +177,17 @@ class ProductApi extends Controller
                 'updated_at' => now(),
             ];
     
-            // Step 5: Xử lý ảnh nếu có
+            // Step 5: Handle image
             if ($request->hasFile('image')) {
+                //The storage on public/uploads
                 $uploadPath = public_path('uploads');
     
+                //Create the folder if not exist
                 if (!file_exists($uploadPath)) {
                     mkdir($uploadPath, 0755, true);
                 }
     
-                // Xóa ảnh cũ nếu có
+                // Remove the previous image if exist
                 if (!empty($product->image_url)) {
                     $oldImagePath = $uploadPath . '/' . $product->image_url;
                     if (file_exists($oldImagePath)) {
@@ -186,6 +195,7 @@ class ProductApi extends Controller
                     }
                 }
     
+                //Set the new image, name set to name_date.ext
                 $image = $request->file('image');
                 $sanitizedName = preg_replace('/[^a-zA-Z0-9_-]/', '_', $validated['name']);
                 $imageName = $sanitizedName . '_' . time() . '.' . $image->getClientOriginalExtension();
@@ -193,16 +203,18 @@ class ProductApi extends Controller
                 $data['image_url'] = $imageName;
             }
     
-            // Step 6: Cập nhật sản phẩm
+            // Step 6: Update the data
             $product->update($data);
     
-            return response()->json([], 200);
+            return response()->json([
+                'message' => __('product.system_update_success')
+            ], 200);
     
         } catch (\Exception $e) {
-            Log::error('Lỗi khi cập nhật sản phẩm: ' . $e->getMessage());
-    
+            //Log the error if needed
+            // Log::error($e->getMessage());
             return response()->json([
-                'message' => 'Đã xảy ra lỗi khi cập nhật sản phẩm. Vui lòng thử lại.'
+                'message' => __('product.system_update_error')
             ], 500);
         }
     }    
@@ -213,20 +225,25 @@ class ProductApi extends Controller
     public function destroy($id)
     {
         try {
-            //Step 1: Delete product
+            //Step 1: Validate the deleted product
             $product = Product::find($id);
             if (!$product) {
-                return response()->json([], 404);
+                return response()->json([
+                    'message' => __('product.system_product_not_exist') 
+                ], 404);
             }
 
-            //Step 2: Delete product
+            //Step 2: Soft delete product
             $product->delete();
 
             //Step 3: Return response
             return response()->json([], 200);
         } catch (\Exception $e) {
+            //Log the error if needed
+            Log::error($e->getMessage());
+            
             return response()->json([
-                'error' => $e->getMessage()
+                'message' => __('product.system_delete_error')
             ], 500);
         }
     }

@@ -91,5 +91,7 @@ return [
     "system_update_error" => "Đã xảy ra lỗi khi cập nhật sản phẩm",
     "system_update_missing" => "Kiểm tra thông tin đầu vào",
 
+    "system_product_not_exist" => "Sản phẩm này không tồn tại, hãy kiểm tra lại.",
+
     "system_fetch_error" => "Đã xảy ra lỗi khi lấy dữ liệu",
 ];

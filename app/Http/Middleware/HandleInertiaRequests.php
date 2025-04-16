@@ -41,7 +41,6 @@ class HandleInertiaRequests extends Middleware
 
         return array_merge(parent::share($request), [
             'name' => config('app.name'),
-            'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
                 'user' => $request->user() ? [
                     'id' => $request->user()->id,
@@ -53,15 +52,12 @@ class HandleInertiaRequests extends Middleware
                     'last_login_at' => $request->user()->last_login_at,
                     'created_at' => $request->user()->created_at,
                     'updated_at' => $request->user()->updated_at,
-                    'roles' => $request->user()->getRoleNames()->toArray(),
+                    'roles' => $request->user()->getRoleNames(),
+                    'permissions' => $request->user()->getAllPermissions()->pluck('name')->toArray()
                 ] : null,
             ],
-            'flash' => fn () => [
-                'message' => $request->session()->get('message'),
-                'error' => $request->session()->get('error'),
-                'success' => $request->session()->get('success'),
-                'warning' => $request->session()->get('warning'),
-                'info' => $request->session()->get('info'),
+            'flash' => [
+                'message' => fn() => $request->session()->get('message'),
             ],
             'ziggy' => fn (): array => [
                 ...(new Ziggy)->toArray(),

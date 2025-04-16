@@ -63,7 +63,7 @@ class ProductRequest extends FormRequest
                 if (!in_array($mime, $allowedMimes) || !in_array($ext, $allowedExts)) {
                     $validator->errors()->add(
                         'image',
-                        __('validation.mimes', ['attribute' => 'image', 'values' => 'jpeg,png,jpg'])
+                        __('validation.mimes', ['attribute' => __('product.table_image'), 'values' => 'jpeg,png,jpg'])
                     );
                 }
             }

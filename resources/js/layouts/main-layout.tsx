@@ -1,9 +1,11 @@
 import { Link } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { User } from '@/types';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import axios from 'axios';
+import { toast, ToastContainer } from 'react-toastify';
+import { usePage } from '@inertiajs/react';
 
 interface MainLayoutProps {
     children: React.ReactNode;
@@ -32,6 +34,7 @@ export default function MainLayout({ children, user, translations }: MainLayoutP
     };
 
     return (
+        <>
         <div className="min-h-screen bg-gray-100">
             <nav className="bg-white border-b border-gray-200">
                 <div className="max-w-4/5 mx-auto px-4 sm:px-6 lg:px-8">
@@ -39,7 +42,7 @@ export default function MainLayout({ children, user, translations }: MainLayoutP
                         <div className="flex">
                             <div className="flex-shrink-0 flex items-center">
                                 <Link href="/">
-                                    <span className="text-xl font-bold text-gray-900">{translations.dashboard}</span>
+                                    <span className="text-xl font-bold text-gray-900">{translations.dashboard} </span>
                                 </Link>
                             </div>
                             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
@@ -176,5 +179,6 @@ export default function MainLayout({ children, user, translations }: MainLayoutP
 
             <main>{children}</main>
         </div>
+        </>
     );
 }

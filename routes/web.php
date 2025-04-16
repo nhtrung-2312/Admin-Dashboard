@@ -100,4 +100,7 @@ Route::get('/lang/{locale?}', function ($locale = null) {
     }
     return redirect()->back();
 });
-                                      
+
+Route::get('/test', function() {
+    return 'Hello world nhưng có middleware';
+})->middleware('check_session');

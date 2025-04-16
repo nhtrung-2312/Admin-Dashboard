@@ -19,4 +19,5 @@ class Product extends Model
     protected $fillable = ['id' ,'name', 'description', 'price', 'quantity', 'status', 'image_url', 'created_at', 'updated_at'];
     protected $keyType = 'string';
     public $incrementing = false;
+    public $timestamps = true;
 }

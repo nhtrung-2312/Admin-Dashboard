@@ -32,6 +32,7 @@ export default function Login({ translations }: Props) {
         password: '',
         remember: false
     });
+    const { flash } = usePage().props as any; 
 
     const startCooldown = (seconds: number) => {
         setThrottleTime(seconds);
@@ -96,6 +97,9 @@ export default function Login({ translations }: Props) {
             if (error.response) {
                 const { status, data } = error.response;
                 switch (status) {
+                    case 403:
+                        setErrors({ password: translations.auth.no_permission });
+                        break;
                     case 405:
                         setErrors({ password: translations.auth.failed });
                         break;
@@ -116,6 +120,10 @@ export default function Login({ translations }: Props) {
             setProcessing(false);
         }
     };
+
+    useEffect(() => {
+        toast.error(flash.message);
+    }, [flash])
 
     return (
         <>

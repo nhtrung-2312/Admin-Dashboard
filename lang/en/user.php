@@ -60,6 +60,8 @@ return [
     "system_update_error" => "An error occurred while updating the user",
     "system_update_missing" => "Check the input information",
 
+    "system_user_not_found" => "This user id is not exist, please try again.",
+
     "system_fetch_error" => "An error occurred while fetching data",
 
 

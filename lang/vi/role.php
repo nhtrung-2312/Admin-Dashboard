@@ -2,6 +2,7 @@
 
 return [
     "head_title" => "Quản lý Chức vụ",
+    
     "list_title" => "Danh sách Chức vụ",
     "list_subtitle" => "Quản lý các chức vụ trong hệ thống",
 
@@ -18,13 +19,17 @@ return [
     "system_delete_confirm" => "Bạn có chắc chắn muốn xóa chức vụ này?",
     "system_delete_success" => "Xóa chức vụ thành công!",
     "system_delete_error" => "Có lỗi xảy ra khi xóa chức vụ.",
+
     "system_fetch_error" => "Có lỗi xảy ra khi lấy danh sách chức vụ.",
+
     "system_create_success" => "Thêm chức vụ thành công!",
     "system_create_error" => "Có lỗi xảy ra khi thêm chức vụ.",
     "system_create_missing" => "Vui lòng điền đầy đủ thông tin.",
+
     "system_update_success" => "Cập nhật chức vụ thành công!",
     "system_update_error" => "Có lỗi xảy ra khi cập nhật chức vụ.",
     "system_update_missing" => "Vui lòng điền đầy đủ thông tin.",
+
     "system_form_not_found" => "Lỗi không tìm thấy chức vụ này.",
 
     "system_delete_is_system" => "Không thể xoá các chức vụ của hệ thống!",

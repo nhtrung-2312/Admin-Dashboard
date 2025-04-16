@@ -19,13 +19,17 @@ return [
     "system_delete_confirm" => "Are you sure you want to delete this role?",
     "system_delete_success" => "Role deleted successfully!",
     "system_delete_error" => "An error occurred while deleting the role.",
+
     "system_fetch_error" => "An error occurred while fetching the role list.",
+
     "system_create_success" => "Role added successfully!",
     "system_create_error" => "An error occurred while adding the role.",
     "system_create_missing" => "Please fill in all required fields.",
+
     "system_update_success" => "Role updated successfully!",
     "system_update_error" => "An error occurred while updating the role.",
     "system_update_missing" => "Please fill in all required fields.",
+    
     "system_form_not_found" => "An error occurred, cannot find this role.",
 
     "system_delete_is_system" => "Cannot delete system roles!",

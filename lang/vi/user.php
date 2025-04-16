@@ -60,5 +60,7 @@ return [
     "system_update_error" => "Đã xảy ra lỗi khi cập nhật người dùng",
     "system_update_missing" => "Kiểm tra thông tin đầu vào",
 
+    "system_user_not_found" => "Người dùng này không tồn tại, hãy kiểm tra lại.",
+
     "system_fetch_error" => "Đã xảy ra lỗi khi lấy dữ liệu",
 ];

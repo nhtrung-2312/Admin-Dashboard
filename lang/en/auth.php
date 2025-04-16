@@ -16,5 +16,10 @@ return [
     'failed' => 'Password is incorrect.',
     'password' => 'Password is incorrect.',
     'throttle' => 'Too many login attempts. Please try again later.',
-    'error' => 'An error occured, please try again.',
+    'system_failed' => 'An error occurred, please try again.',
+    'not_authorize' => 'You cannot access to this page',
+    'locked' => 'This account have been block, please contact to admin.',
+    'deleted' => 'This account have been delete, please contact to admin',
+    'session_expired' => 'This session has expired, please log in again.',
+    'no_permission' => 'You do not have permission to perform this action.',
 ];

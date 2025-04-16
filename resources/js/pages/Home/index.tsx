@@ -8,8 +8,6 @@ import axios from 'axios';
 import { Bounce, ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/ReactToastify.css'
 import { router } from '@inertiajs/react'
-import { usePage } from '@inertiajs/react'
-import { debounce } from 'lodash';
 import EditUserModal from '@/components/EditUserModal';
 
 interface Props {
@@ -83,16 +81,14 @@ export default function Index({ auth, translations, roles }: Props) {
     const [editingUser, setEditingUser] = useState<UserData | null>(null);
     const [tempStatusFilter, setTempStatusFilter] = useState<string>(searchParams.get('status') || '');
     const [tempRoleFilter, setTempRoleFilter] = useState<string>(searchParams.get('role') || '');
-    const [editFormData, setEditFormData] = useState<FormData>({
-        name: '',
-        email: '',
-        is_active: 0,
-        group_role: 'user'
-    });
 
     const canEdit = auth.user.roles.includes('admin');
     const canDelete = auth.user.roles.includes('admin');
     const canCreate = auth.user.roles.includes('admin');
+
+    useEffect(() => {
+        console.log(auth.user);
+    }, [auth.user])
 
     const updateUrlAndFetch = (params: Record<string, any>) => {
         // Lọc ra các tham số có giá trị
@@ -316,7 +312,7 @@ export default function Index({ auth, translations, roles }: Props) {
         <MainLayout user={auth.user} translations={translations.nav}>
             <ToastContainer
                 position="top-right"
-                autoClose={3000}
+                autoClose={1000}
                 hideProgressBar={false}
                 newestOnTop={false}
                 closeOnClick
