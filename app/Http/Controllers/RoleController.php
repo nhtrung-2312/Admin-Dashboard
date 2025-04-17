@@ -15,7 +15,8 @@ class RoleController extends Controller
             'translations' => [
                 'nav' => __('nav'),
                 'role' => __('role'),
-                'pagination' => __('pagination')
+                'pagination' => __('pagination'),
+                'permissions' => __('permissions')
             ],
             'permissions' => $permissions,
         ]);

@@ -52,8 +52,19 @@ class AuthenticationApi extends Controller
                 // Step 3: Assign the role
                 $user->assignRole($user->group_role);
 
-                //Check if the user has any permissions
-                if ($user->getAllPermissions()->isEmpty()) {
+                $permissions = $user->getAllPermissions()->pluck('name');
+
+                $redirect = null;
+
+                //Check for available route perms (View is the main perms of that page)
+                if ($permissions->contains('view_users')) {
+                    $redirect = route('home');
+                } elseif ($permissions->contains('view_products')) {
+                    $redirect = route('products');
+                } elseif ($permissions->contains('view_roles')) {
+                    $redirect = route('roles');
+                } else {
+                    //No permissions to enter the site
                     Auth::logout();
                     return response()->json([
                         'message' => __('auth.no_permission')
@@ -79,7 +90,7 @@ class AuthenticationApi extends Controller
 
                 return response()->json([
                     'status' => true,
-                    'redirect' => '/'
+                    'redirect' => $redirect,
                 ], 200);
             }
 

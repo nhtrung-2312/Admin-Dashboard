@@ -75,10 +75,6 @@ export default function Index({ auth, translations }: Props) {
     const [isDeleting, setIsDeleting] = useState(false);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-    const canEdit = auth.user.roles.includes('admin') || auth.user.roles.includes('manager');
-    const canDelete = auth.user.roles.includes('admin');
-    const canCreate = auth.user.roles.includes('admin') || auth.user.roles.includes('manager');
-
     useEffect(() => {
         const newSearchParams = new URLSearchParams(window.location.search);
         const newFilters = {
@@ -304,7 +300,7 @@ export default function Index({ auth, translations }: Props) {
                                 <Button
                                     onClick={() => router.get('/products/create')}
                                     className="bg-blue-500 hover:bg-blue-600 text-white"
-                                    disabled={!canCreate}
+                                    disabled={!auth.user.permissions.includes("create_products")}
                                 >
                                     {translations.product.list_button_add}
                                 </Button>
@@ -514,7 +510,7 @@ export default function Index({ auth, translations }: Props) {
                                                                 variant="secondary"
                                                                 className="flex items-center gap-1"
                                                                 onClick={() => handleEdit(product)}
-                                                                disabled={!canEdit}
+                                                                disabled={!auth.user.permissions.includes("edit_products")}
                                                             >
                                                                 {translations.product.table_item_button_edit}
                                                             </Button>
@@ -523,7 +519,7 @@ export default function Index({ auth, translations }: Props) {
                                                                 variant="destructive"
                                                                 className="flex items-center gap-1"
                                                                 onClick={() => handleDelete(product.id)}
-                                                                disabled={!canDelete || isDeleting}
+                                                                disabled={!auth.user.permissions.includes("delete_products")}
                                                             >
                                                                 {isDeleting ? translations.product.table_isloading : translations.product.table_item_button_delete}
                                                             </Button>

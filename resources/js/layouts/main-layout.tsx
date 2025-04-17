@@ -47,6 +47,7 @@ export default function MainLayout({ children, user, translations }: MainLayoutP
                             </div>
                             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
                                 <Link
+                                    hidden={!user.permissions.includes("view_users")}
                                     href={route('home')}
                                     className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
                                         route().current('home')
@@ -57,6 +58,7 @@ export default function MainLayout({ children, user, translations }: MainLayoutP
                                     {translations.user}
                                 </Link>
                                 <Link
+                                    hidden={!user.permissions.includes("view_products")}
                                     href={route('products')}
                                     className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
                                         route().current('products') || route().current('products.create')
@@ -67,6 +69,7 @@ export default function MainLayout({ children, user, translations }: MainLayoutP
                                     {translations.products}
                                 </Link>
                                 <Link
+                                    hidden={!user.permissions.includes("view_roles")}
                                     href={route('roles')}
                                     className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
                                         route().current('roles')

@@ -12,18 +12,20 @@ class RoleSeeder extends Seeder
     {
         // Tạo permissions
         $permissions = [
-            'view users',
-            'create users',
-            'edit users',
-            'delete users',
-            'view products',
-            'create products',
-            'edit products',
-            'delete products',
-            'view roles',
-            'create roles',
-            'edit roles',
-            'delete roles',
+            'view_users',
+            'create_users',
+            'edit_users',
+            'delete_users',
+            'view_products',
+            'create_products',
+            'create_bulk_products',
+            'edit_products',
+            'delete_products',
+            'delete_bulk_products',
+            'view_roles',
+            'create_roles',
+            'edit_roles',
+            'delete_roles',
         ];
 
         foreach ($permissions as $permission) {
@@ -35,7 +37,7 @@ class RoleSeeder extends Seeder
         $admin->givePermissionTo($permissions);
 
         $manager = Role::create(['name' => 'manager']);
-        $manager->givePermissionTo(['view products', 'view users']);
+        $manager->givePermissionTo(['view_products', 'view_users']);
 
         $user = Role::create(['name' => 'user', 'is_system' => 1]);
     }

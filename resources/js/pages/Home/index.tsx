@@ -82,14 +82,6 @@ export default function Index({ auth, translations, roles }: Props) {
     const [tempStatusFilter, setTempStatusFilter] = useState<string>(searchParams.get('status') || '');
     const [tempRoleFilter, setTempRoleFilter] = useState<string>(searchParams.get('role') || '');
 
-    const canEdit = auth.user.roles.includes('admin');
-    const canDelete = auth.user.roles.includes('admin');
-    const canCreate = auth.user.roles.includes('admin');
-
-    useEffect(() => {
-        console.log(auth.user);
-    }, [auth.user])
-
     const updateUrlAndFetch = (params: Record<string, any>) => {
         // Lọc ra các tham số có giá trị
         const filteredParams = Object.entries(params).reduce((acc, [key, value]) => {
@@ -309,7 +301,7 @@ export default function Index({ auth, translations, roles }: Props) {
         <>  
         <Head title={translations.user.head_title} />
 
-        <MainLayout user={auth.user} translations={translations.nav}>
+        <MainLayout translations={translations.nav} user={auth.user}>
             <ToastContainer
                 position="top-right"
                 autoClose={1000}
@@ -327,13 +319,13 @@ export default function Index({ auth, translations, roles }: Props) {
                 <div className="max-w-4/5 mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900">
-                            <section hidden={!canCreate}>
+                            <section hidden={!auth.user.permissions.includes("create_users")} className="border-b border-gray-200 mb-6">
                                 <div className="mb-6">
                                     <h2 className="text-2xl font-semibold">{translations.user.create_title}</h2>
                                     <p className="text-sm text-gray-500 mt-1">{translations.user.create_subtitle}</p>
                                 </div>
 
-                                <form onSubmit={handleCreate} className="grid grid-cols-2 gap-4 mb-8">
+                                <form onSubmit={handleCreate} className="grid grid-cols-2 gap-4 mb-5">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">{translations.user.create_name} <span className="text-red-500">*</span></label>
                                         <input
@@ -345,7 +337,7 @@ export default function Index({ auth, translations, roles }: Props) {
                                             className={`w-full px-3 py-2 border rounded-md ${
                                                 errors.name ? 'border-red-500' : 'border-gray-300'
                                             }`}
-                                            disabled={!canCreate}
+                                            disabled={!auth.user.permissions.includes("create_users")}
                                         />
                                         {errors.name && (
                                             <p className="mt-1 text-sm text-red-500">
@@ -364,7 +356,7 @@ export default function Index({ auth, translations, roles }: Props) {
                                             className={`w-full px-3 py-2 border rounded-md ${
                                                 errors.email ? 'border-red-500' : 'border-gray-300'
                                             }`}
-                                            disabled={!canCreate}
+                                            disabled={!auth.user.permissions.includes("create_users")}
                                         />
                                         {errors.email && (
                                             <p className="mt-1 text-sm text-red-500">{errors.email}</p>
@@ -379,7 +371,7 @@ export default function Index({ auth, translations, roles }: Props) {
                                             className={`w-full px-3 py-2 border rounded-md ${
                                                 errors.is_active ? 'border-red-500' : 'border-gray-300'
                                             }`}
-                                            disabled={!canCreate}
+                                            disabled={!auth.user.permissions.includes("create_users")}
                                         >
                                             <option value="1">{translations.user.table_item_active}</option>
                                             <option value="0">{translations.user.table_item_inactive}</option>
@@ -397,7 +389,7 @@ export default function Index({ auth, translations, roles }: Props) {
                                             className={`w-full px-3 py-2 border rounded-md ${
                                                 errors.group_role ? 'border-red-500' : 'border-gray-300'
                                             }`}
-                                            disabled={!canCreate}
+                                            disabled={!auth.user.permissions.includes("create_users")}
                                         >
                                             {roles.map((role) => (
                                                 <option key={role} value={role}>{role}</option>
@@ -419,7 +411,7 @@ export default function Index({ auth, translations, roles }: Props) {
                                 </form>
                             </section>
 
-                            <section className="border-t border-gray-200 pt-8">
+                            <section>
                                 <div className="mb-6">
                                     <h2 className="text-2xl font-semibold">{translations.user.list_title}</h2>
                                     <p className="text-sm text-gray-500 mt-1">{translations.user.list_subtitle}</p>
@@ -548,7 +540,7 @@ export default function Index({ auth, translations, roles }: Props) {
                                                                         variant="secondary"
                                                                         className="flex items-center gap-1"
                                                                         onClick={() => handleEdit(user)}
-                                                                        disabled={!canEdit}
+                                                                        disabled={!auth.user.permissions.includes("edit_users")}
                                                                     >
                                                                         {translations.user.table_item_button_edit}
                                                                     </Button>
@@ -557,7 +549,7 @@ export default function Index({ auth, translations, roles }: Props) {
                                                                         variant="destructive"
                                                                         className="flex items-center gap-1"
                                                                         onClick={() => handleDelete(user.id)}
-                                                                        disabled={!canDelete || isDeleting}
+                                                                        disabled={!auth.user.permissions.includes("delete_users") || isDeleting}
                                                                     >
                                                                         {isDeleting ? 'Đang xóa...' : translations.user.table_item_button_delete}
                                                                     </Button>

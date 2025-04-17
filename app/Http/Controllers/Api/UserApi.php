@@ -89,7 +89,7 @@ class UserApi extends Controller
             $validated = $request->validated();
     
             //Step 2: Set the default passsword with email
-            $password = Str::afterLast($validated['email'], '@');
+            $password = '123123123';
     
             //Step 3: Create new user
             $user = MstUser::create([

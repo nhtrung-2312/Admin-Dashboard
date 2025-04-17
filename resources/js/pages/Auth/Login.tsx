@@ -90,7 +90,7 @@ export default function Login({ translations }: Props) {
             });
 
             if(response.data.redirect) {
-                window.location.href = '/';
+                window.location.href = response.data.redirect; 
             }
 
         } catch (error: any) {
@@ -111,10 +111,10 @@ export default function Login({ translations }: Props) {
                         startCooldown(retryAfter);
                         break;
                     default:
-                        setErrors({ email: translations.system.fail });
+                        setErrors({ email: translations.auth.system_failed });
                 }
             } else {
-                setErrors({ email: translations.system.fail });
+                setErrors({ email: translations.auth.system_failed });
             }
         } finally {
             setProcessing(false);

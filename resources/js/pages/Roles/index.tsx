@@ -8,6 +8,8 @@ import axios from 'axios';
 import TablePagination from '@/components/TablePagination';
 import { User } from '@/types';
 import EditRoleModal from '@/components/EditRoleModal';
+import { permission } from 'process';
+import { group } from 'console';
 
 interface Role {
     id: number;
@@ -51,11 +53,7 @@ export default function Index({ auth, translations, permissions }: Props) {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingRole, setEditingRole] = useState<Role | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
-
-    // Permissions
-    const canEdit = auth.user.roles.includes('admin');
-    const canDelete = auth.user.roles.includes('admin');
-    const canCreate = auth.user.roles.includes('admin');
+    const groupedPermissions: Record<string, string[]> = {};
 
     // Handlers
     const handlePageChange = (page: number) => {
@@ -104,6 +102,23 @@ export default function Index({ auth, translations, permissions }: Props) {
         }
     };
 
+    roles.forEach((role) => {
+        role.permissions.forEach((permissionCode) => {
+            const parts = permissionCode.split('_');
+            const group = parts.slice(-1)[0];
+    
+            if (!groupedPermissions[group]) {
+                groupedPermissions[group] = [];
+            }
+    
+            if(!groupedPermissions[group].includes(permissionCode)) {
+                groupedPermissions[group].push(permissionCode);
+            }
+        });
+    });
+
+    console.log(roles)
+
     useEffect(() => {
         fetchRoles();
     }, [currentPage, perPage, searchTerm]);
@@ -115,7 +130,7 @@ export default function Index({ auth, translations, permissions }: Props) {
             <MainLayout user={auth.user} translations={translations.nav}>
                 <ToastContainer
                     position="top-right"
-                    autoClose={3000}
+                    autoClose={1200}
                     hideProgressBar={false}
                     newestOnTop={false}
                     closeOnClick
@@ -151,7 +166,7 @@ export default function Index({ auth, translations, permissions }: Props) {
                                         <Button
                                             onClick={() => setIsEditModalOpen(true)}
                                             className="bg-lime-500 hover:bg-lime-600"
-                                            disabled={!canCreate}
+                                            disabled={!auth.user.permissions.includes('create_roles')}
                                         >
                                             {translations.role.create_button}
                                         </Button>
@@ -199,16 +214,30 @@ export default function Index({ auth, translations, permissions }: Props) {
                                                                         {meta?.from ? meta.from + index : index + 1}
                                                                     </td>
                                                                     <td className={`whitespace-nowrap px-3 py-4 text-center text-sm ${role.is_system == 1 ? 'text-red-500' : 'text-gray-900'}`}>{role.name}</td>
-                                                                    <td className="px-3 py-4 text-sm text-gray-500 align-top max-w-[700px]">
-                                                                        <div className="flex flex-wrap justify-center gap-1 max-h-24 overflow-y-auto">
-                                                                            {role.permissions.map((permission) => (
-                                                                                <span
-                                                                                    key={permission}
-                                                                                    className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
-                                                                                >
-                                                                                    {permission}
-                                                                                </span>
-                                                                            ))}
+                                                                    <td className="px-3 py-4 text-sm text-gray-700 align-top max-w-[700px] text-center">
+                                                                        <div className="flex flex-col items-center gap-3 max-h-32 overflow-y-auto">
+                                                                            {Object.entries(groupedPermissions).map(([group, perms]) => {
+                                                                                const rolePerms = perms.filter((perm) => role.permissions.includes(perm));
+                                                                                if (rolePerms.length === 0) return null;
+
+                                                                                return (
+                                                                                    <div key={group} className="mb-2">
+                                                                                        {/* <div className="text-xs font-bold text-gray-800 mb-1 capitalize">
+                                                                                            {group}
+                                                                                        </div> */}
+                                                                                        <div className="flex flex-wrap justify-center gap-2">
+                                                                                            {rolePerms.map((permission) => (
+                                                                                                <span
+                                                                                                    key={permission}
+                                                                                                    className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                                                                                                >
+                                                                                                    {translations.permissions?.[permission] || permission}
+                                                                                                </span>
+                                                                                            ))}
+                                                                                        </div>
+                                                                                    </div>
+                                                                                );
+                                                                            })}
                                                                         </div>
                                                                     </td>
                                                                     <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
@@ -217,7 +246,7 @@ export default function Index({ auth, translations, permissions }: Props) {
                                                                                 size="sm"
                                                                                 variant="secondary"
                                                                                 onClick={() => handleEdit(role)}
-                                                                                disabled={!canEdit}
+                                                                                disabled={!auth.user.permissions.includes('edit_roles')}
                                                                                 className="inline-flex items-center"
                                                                             >
                                                                                 {translations.role.table_item_button_edit}
@@ -226,7 +255,7 @@ export default function Index({ auth, translations, permissions }: Props) {
                                                                                 size="sm"
                                                                                 variant="destructive"
                                                                                 onClick={() => handleDelete(role.id)}
-                                                                                disabled={!canDelete}
+                                                                                disabled={!auth.user.permissions.includes('delete_roles')}
                                                                                 className="inline-flex items-center"
                                                                             >
                                                                                 {translations.role.table_item_button_delete}

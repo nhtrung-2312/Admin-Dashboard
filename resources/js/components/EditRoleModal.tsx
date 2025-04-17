@@ -44,8 +44,8 @@ export default function EditRoleModal({ translations, role, onClose, onSuccess, 
 
     const groupedPermissions = useMemo(() => {
         return permissions.reduce((acc, perm) => {
-            const parts = perm.split(' ');
-            const resource = parts[parts.length - 1]; // lấy từ cuối
+            const parts = perm.split('_');
+            const resource = parts[parts.length - 1];
             if (!acc[resource]) acc[resource] = [];
             acc[resource].push(perm);
             return acc;
@@ -151,7 +151,7 @@ export default function EditRoleModal({ translations, role, onClose, onSuccess, 
                                                         onChange={() => toggleGroupPermissions(resource, perms)}
                                                         className="rounded border-gray-300 text-lime-600 focus:ring-lime-500"
                                                     />
-                                                    <span className="font-semibold text-gray-800 capitalize">{resource}</span>
+                                                    <span className="font-semibold text-gray-800 capitalize">{translations.permissions?.[resource] || resource}</span>
                                                 </label>
                                             </div>
                                             <div className="space-y-2 ml-6">
@@ -164,7 +164,7 @@ export default function EditRoleModal({ translations, role, onClose, onSuccess, 
                                                             className="rounded border-gray-300 text-lime-600 focus:ring-lime-500"
                                                         />
                                                         <span className="text-gray-700 group-hover:text-gray-900">
-                                                            {perm.split(' ')[0]}
+                                                            {translations.permissions?.[perm] || perm}
                                                         </span>
                                                     </label>
                                                 ))}
