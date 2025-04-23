@@ -9,7 +9,7 @@ import TablePagination from '@/components/TablePagination';
 import { User } from '@/types';
 import EditRoleModal from '@/components/EditRoleModal';
 import { permission } from 'process';
-import { group } from 'console';
+import { group, table } from 'console';
 
 interface Role {
     id: number;
@@ -106,18 +106,16 @@ export default function Index({ auth, translations, permissions }: Props) {
         role.permissions.forEach((permissionCode) => {
             const parts = permissionCode.split('_');
             const group = parts.slice(-1)[0];
-    
+
             if (!groupedPermissions[group]) {
                 groupedPermissions[group] = [];
             }
-    
+
             if(!groupedPermissions[group].includes(permissionCode)) {
                 groupedPermissions[group].push(permissionCode);
             }
         });
     });
-
-    console.log(roles)
 
     useEffect(() => {
         fetchRoles();
@@ -126,7 +124,7 @@ export default function Index({ auth, translations, permissions }: Props) {
     return (
         <>
             <Head title={translations.role.head_title} />
-            
+
             <MainLayout user={auth.user} translations={translations.nav}>
                 <ToastContainer
                     position="top-right"
@@ -153,27 +151,28 @@ export default function Index({ auth, translations, permissions }: Props) {
                                     </div>
 
                                     {/* Search and Filter */}
-                                    <div className="mb-4 flex gap-4">
-                                        <div className="flex-1">
-                                            <input
-                                                type="text"
-                                                placeholder={translations.role.search_placeholder}
-                                                value={searchTerm}
-                                                onChange={(e) => setSearchTerm(e.target.value)}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                                            />
-                                        </div>
+                                    <div className="mb-4 flex items-center justify-between">
+                                        <input
+                                            type="text"
+                                            placeholder={translations.role.search_placeholder}
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            className="flex-1 max-w-[300px] px-3 py-2 border border-gray-300 rounded-md"
+                                            disabled={!auth.user.permissions.includes('view_roles')}
+                                            hidden={!auth.user.permissions.includes('view_roles')}
+                                        />
                                         <Button
                                             onClick={() => setIsEditModalOpen(true)}
-                                            className="bg-lime-500 hover:bg-lime-600"
+                                            className="ml-4 bg-lime-500 hover:bg-lime-600"
                                             disabled={!auth.user.permissions.includes('create_roles')}
+                                            hidden={!auth.user.permissions.includes('create_roles')}
                                         >
                                             {translations.role.create_button}
                                         </Button>
                                     </div>
 
                                     {/* Pagination */}
-                                    {meta && (
+                                    {(meta && auth.user.permissions.includes('view_roles')) && (
                                         <div className="mb-4">
                                             <TablePagination
                                                 translations={translations.pagination}
@@ -190,7 +189,7 @@ export default function Index({ auth, translations, permissions }: Props) {
                                     )}
 
                                     {/* Table */}
-                                    {isLoading ? (
+                                    {(isLoading && auth.user.permissions.includes('view_roles')) ?  (
                                         <div className="text-center py-4">{translations.role.table_isloading}</div>
                                     ) : roles.length === 0 ? (
                                         <div className="text-center py-4">{translations.role.table_no_data}</div>
@@ -214,17 +213,13 @@ export default function Index({ auth, translations, permissions }: Props) {
                                                                         {meta?.from ? meta.from + index : index + 1}
                                                                     </td>
                                                                     <td className={`whitespace-nowrap px-3 py-4 text-center text-sm ${role.is_system == 1 ? 'text-red-500' : 'text-gray-900'}`}>{role.name}</td>
-                                                                    <td className="px-3 py-4 text-sm text-gray-700 align-top max-w-[700px] text-center">
-                                                                        <div className="flex flex-col items-center gap-3 max-h-32 overflow-y-auto">
+                                                                    <td className="px-3 py-4 text-sm text-gray-700 align-top max-w-[1000px] text-center">
+                                                                        <div className="flex flex-col items-center gap-2 max-h-32 overflow-y-auto">
                                                                             {Object.entries(groupedPermissions).map(([group, perms]) => {
                                                                                 const rolePerms = perms.filter((perm) => role.permissions.includes(perm));
                                                                                 if (rolePerms.length === 0) return null;
-
                                                                                 return (
                                                                                     <div key={group} className="mb-2">
-                                                                                        {/* <div className="text-xs font-bold text-gray-800 mb-1 capitalize">
-                                                                                            {group}
-                                                                                        </div> */}
                                                                                         <div className="flex flex-wrap justify-center gap-2">
                                                                                             {rolePerms.map((permission) => (
                                                                                                 <span
@@ -277,7 +272,7 @@ export default function Index({ auth, translations, permissions }: Props) {
                 </div>
 
                 {/* Edit Modal */}
-                {(isEditModalOpen || editingRole) && (
+                {((isEditModalOpen || editingRole) && (auth.user.permissions.includes('view_roles'))) && (
                     <EditRoleModal
                         role={editingRole}
                         permissions={permissions}

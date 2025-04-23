@@ -7,7 +7,12 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\Api\ProductApi;
 use App\Http\Controllers\Api\AuthenticationApi;
+use App\Http\Controllers\Api\FileApi;
+use App\Http\Controllers\Api\PermissionApi;
 use App\Http\Controllers\Api\RoleApi;
+use App\Http\Controllers\FileController;
+use App\Http\Controllers\PermissionController;
+use App\Models\MstUser;
 use Illuminate\Support\Facades\Route;
 
 // API Routes
@@ -15,15 +20,15 @@ Route::prefix('api')->name('api.')->middleware(['web', 'auth', 'check_session'])
     // User routes
     Route::prefix('users')->middleware(['permission:view_users'])->group(function () {
         Route::get('/', [UserApi::class, 'index'])->name('users.index');
-        
+
         Route::middleware(['permission:create_users'])->group(function () {
             Route::post('/', [UserApi::class, 'store'])->name('users.store');
         });
-        
+
         Route::middleware(['permission:edit_users'])->group(function () {
             Route::put('/{user}', [UserApi::class, 'update'])->name('users.update');
         });
-        
+
         Route::middleware(['permission:delete_users'])->group(function () {
             Route::delete('/{user}', [UserApi::class, 'destroy'])->name('users.destroy');
         });
@@ -36,11 +41,11 @@ Route::prefix('api')->name('api.')->middleware(['web', 'auth', 'check_session'])
         Route::middleware(['permission:create_products'])->group(function () {
             Route::post('/', [ProductApi::class, 'store'])->name('products.store');
         });
-        
+
         Route::middleware(['permission:edit_products'])->group(function () {
             Route::put('/{product}', [ProductApi::class, 'update'])->name('products.update');
         });
-        
+
         Route::middleware(['permission:delete_products'])->group(function () {
             Route::delete('/{product}', [ProductApi::class, 'destroy'])->name('products.destroy');
         });
@@ -62,6 +67,23 @@ Route::prefix('api')->name('api.')->middleware(['web', 'auth', 'check_session'])
             Route::delete('/{role}', [RoleApi::class, 'destroy'])->name('roles.destroy');
         });
     });
+
+    // // Permission routes
+    // Route::prefix('permissions')->group(function () {
+    //     Route::get('/', [PermissionApi::class, 'index'])->name('permission.index');
+
+    //     Route::post('/', [PermissionApi::class, 'store'])->name('permission.store');
+
+    //     Route::put('/{id}', [PermissionApi::class, 'update'])->name('permission.update');
+
+    //     Route::delete('/{id}', [PermissionApi::class, 'destroy'])->name('permission.destroy');
+    // });
+
+    // File routes
+    Route::prefix('files')->group(function () {
+        Route::post('/import', [FileApi::class, 'import'])->name('file.import');
+        Route::post('/export', [FileApi::class, 'export'])->name('file.export');
+    });
 });
 
 // Inertia Routes
@@ -78,6 +100,14 @@ Route::middleware(['web', 'auth', 'check_session'])->group(function () {
 
     Route::prefix('roles')->middleware(['permission:view_roles'])->group(function () {
         Route::get('/', [RoleController::class, 'index'])->name('roles');
+    });
+
+    // Route::prefix('permissions')->group(function () {
+    //     Route::get('/', [PermissionController::class, 'index'])->name('permissions');
+    // });
+
+    Route::prefix('files')->group(function () {
+        Route::get('/', [FileController::class, 'index'])->name('files');
     });
 });
 
@@ -103,7 +133,3 @@ Route::get('/lang/{locale?}', function ($locale = null) {
     }
     return redirect()->back();
 });
-
-Route::get('/test', function() {
-    return 'Hello world nhưng có middleware';
-})->middleware('check_session');

@@ -37,7 +37,7 @@ export default function Create({ auth, translations }: Props) {
 
     const formatPrice = (value: string) => {
         const numericValue = value.replace(/[^\d]/g, '');
-        
+
         return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     };
 
@@ -55,12 +55,12 @@ export default function Create({ auth, translations }: Props) {
 
             const numericValue = value.replace(/[^\d]/g, '').replace(/^0+/, '') || '0';
             const formattedValue = formatPrice(numericValue);
-            
+
             setFormData(prev => ({
                 ...prev,
                 [name]: formattedValue
             }));
-            
+
             if (errors.price) {
                 setErrors(prev => ({
                     ...prev,
@@ -76,14 +76,14 @@ export default function Create({ auth, translations }: Props) {
             }
 
             const numericValue = parseInt(value.replace(/^0+/, '')) || 0;
-            
+
             if (errors.quantity) {
                 setErrors(prev => ({
                     ...prev,
                     quantity: undefined
                 }));
             }
-            
+
             setFormData(prev => ({
                 ...prev,
                 [name]: numericValue
@@ -118,7 +118,7 @@ export default function Create({ auth, translations }: Props) {
                 image: file
             }));
             setImagePreview(URL.createObjectURL(file));
-            
+
             if (errors.image) {
                 setErrors(prev => ({
                     ...prev,
@@ -165,7 +165,7 @@ export default function Create({ auth, translations }: Props) {
     };
 
     return (
-        <>  
+        <>
             <Head title={translations.product.create_title}></Head>
             <MainLayout user={auth.user} translations={translations.nav}>
                 <ToastContainer
@@ -293,7 +293,7 @@ export default function Create({ auth, translations }: Props) {
                                         {/* Hàng 4: Hình ảnh (2 cột) */}
                                         <div className="md:col-span-2">
                                             <label className="block text-sm font-medium text-gray-700 mb-2">{translations.product.create_form_image}</label>
-                                            <div 
+                                            <div
                                                 className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 rounded-md transition-colors cursor-pointer ${
                                                     errors.image ? 'border-red-500' : 'border-gray-300 border-dashed hover:border-blue-500'
                                                 }`}

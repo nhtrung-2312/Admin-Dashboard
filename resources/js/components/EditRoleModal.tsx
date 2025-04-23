@@ -63,7 +63,7 @@ export default function EditRoleModal({ translations, role, onClose, onSuccess, 
 
     const toggleGroupPermissions = (resource: string, groupPermissions: string[]) => {
         const allChecked = groupPermissions.every(perm => formData.permissions.includes(perm));
-        
+
         setFormData(prev => ({
             ...prev,
             permissions: allChecked
@@ -84,6 +84,7 @@ export default function EditRoleModal({ translations, role, onClose, onSuccess, 
                 toast.success(translations.role.system_create_success);
             }
             onSuccess();
+            window.location.reload();
         } catch (error: any) {
             if (error.response?.status === 422) {
                 setErrors(error.response.data.errors || {});
@@ -99,8 +100,8 @@ export default function EditRoleModal({ translations, role, onClose, onSuccess, 
     return (
         <>
             {isOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto text-black">
+                <div className="fixed inset-0 backdrop-blur-sm bg-gray-800/30 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl shadow-2xl p-8 w-full max-w-4xl max-h-[90vh] overflow-y-auto text-gray-900">
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-2xl font-semibold text-gray-800">
                                 {role ? translations.role.form_update : translations.role.form_create}

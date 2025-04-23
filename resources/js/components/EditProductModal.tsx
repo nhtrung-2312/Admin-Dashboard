@@ -188,8 +188,8 @@ export default function EditProductModal({ isOpen, onClose, product, onSuccess, 
     if (!isOpen || !product) return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 text-black">
-            <div className="bg-white rounded-lg p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 backdrop-blur-sm bg-gray-800/30 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-2xl p-8 w-full max-w-4xl max-h-[90vh] overflow-y-auto text-gray-900">
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-2xl font-bold">{translations.product.edit_title}</h2>
                     <button onClick={onClose} className="text-gray-500 hover:text-gray-700">

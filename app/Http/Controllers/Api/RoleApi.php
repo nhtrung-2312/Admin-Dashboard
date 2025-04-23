@@ -25,11 +25,11 @@ class RoleApi extends Controller
             if ($request->has('search') && !empty($request->search)) {
                 $query->where('name', 'LIKE', '%' . $request->search . '%');
             }
-    
+
             // Paginate
             $perPage = $request->input('per_page', 10);
             $roles = $query->paginate($perPage);
-    
+
             // Format the data with permissions
             $formattedData = $roles->through(function ($role) {
                 return [
@@ -41,7 +41,7 @@ class RoleApi extends Controller
                     'updated_at' => $role->updated_at,
                 ];
             });
-    
+
             return response()->json([
                 'data' => $formattedData->items(),
                 'meta' => [

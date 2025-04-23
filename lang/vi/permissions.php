@@ -16,7 +16,7 @@ return [
     "delete_products" => "Xóa sản phẩm",
     "delete_bulk_products" => "Xóa nhiều sản phẩm",
     "create_bulk_products" => "Thêm nhiều sản phẩm",
-    
+
     "view_roles" => "Xem danh sách vai trò",
     "create_roles" => "Thêm vai trò",
     "edit_roles" => "Chỉnh sửa vai trò",
@@ -26,4 +26,20 @@ return [
     "create_permissions" => "Thêm quyền",
     "edit_permissions" => "Chỉnh sửa quyền",
     "delete_permissions" => "Xóa quyền",
+    "list_title" => "Quyền cá nhân",
+    "list_subtitle" => "Người dùng với quyền tùy chỉnh",
+
+    "create_button" => "Gán quyền",
+    "delete_button" => "Xóa",
+    "edit_button" => "Chỉnh sửa",
+
+    "search_placeholder" => "Tìm kiếm theo tên người dùng...",
+
+    "table_isloading" => "Đang tải...",
+    "table_no_data" => "Không tìm thấy yêu cầu của bạn :(",
+
+    "table_no" => "STT.",
+    "table_name" => "Tên",
+    "table_permissions" => "Quyền",
+    "table_action" => "Hành động",
 ];

@@ -165,7 +165,7 @@ export default function Index({ auth, translations, roles }: Props) {
             setUsers(usersResponse.data.data);
             setMeta(usersResponse.data.meta);
 
-            
+
         } catch (error: any) {
             if (error.response?.status === 422) {
                 // Xử lý lỗi validation
@@ -298,7 +298,7 @@ export default function Index({ auth, translations, roles }: Props) {
     }, [currentPage, perPage, statusFilter, roleFilter, searchTerm]);
 
     return (
-        <>  
+        <>
         <Head title={translations.user.head_title} />
 
         <MainLayout translations={translations.nav} user={auth.user}>
