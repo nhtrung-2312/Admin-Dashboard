@@ -1,22 +1,23 @@
 <?php
 
 use App\Http\Controllers\Api\UserApi;
-use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\Api\ProductApi;
-use App\Http\Controllers\Api\AuthenticationApi;
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\FileApi;
 use App\Http\Controllers\Api\PermissionApi;
 use App\Http\Controllers\Api\RoleApi;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\PermissionController;
 use App\Models\MstUser;
+use App\Http\Controllers\LoginController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-// API Routes
-Route::prefix('api')->name('api.')->middleware(['web', 'auth', 'check_session'])->group(function () {
+//API Routes
+Route::prefix('api')->name('api.')->middleware(['jwt'])->group(function () {
     // User routes
     Route::prefix('users')->middleware(['permission:view_users'])->group(function () {
         Route::get('/', [UserApi::class, 'index'])->name('users.index');
@@ -68,17 +69,6 @@ Route::prefix('api')->name('api.')->middleware(['web', 'auth', 'check_session'])
         });
     });
 
-    // // Permission routes
-    // Route::prefix('permissions')->group(function () {
-    //     Route::get('/', [PermissionApi::class, 'index'])->name('permission.index');
-
-    //     Route::post('/', [PermissionApi::class, 'store'])->name('permission.store');
-
-    //     Route::put('/{id}', [PermissionApi::class, 'update'])->name('permission.update');
-
-    //     Route::delete('/{id}', [PermissionApi::class, 'destroy'])->name('permission.destroy');
-    // });
-
     // File routes
     Route::prefix('files')->group(function () {
         Route::post('/import', [FileApi::class, 'import'])->name('file.import');
@@ -87,14 +77,13 @@ Route::prefix('api')->name('api.')->middleware(['web', 'auth', 'check_session'])
 });
 
 // Inertia Routes
-Route::middleware(['web', 'auth', 'check_session'])->group(function () {
-    Route::prefix('/')->middleware(['permission:view_users'])->group(function () {
+Route::middleware(['jwt'])->group(function () {
+    Route::prefix('/')->group(function () {
         Route::get('/', [HomeController::class, 'index'])->name('home');
     });
 
     Route::prefix('products')->middleware(['permission:view_products'])->group(function () {
         Route::get('/', [ProductController::class, 'index'])->name('products');
-
         Route::get('/create', [ProductController::class, 'create'])->middleware(['permission:create_products'])->name('products.create');
     });
 
@@ -102,23 +91,25 @@ Route::middleware(['web', 'auth', 'check_session'])->group(function () {
         Route::get('/', [RoleController::class, 'index'])->name('roles');
     });
 
-    // Route::prefix('permissions')->group(function () {
-    //     Route::get('/', [PermissionController::class, 'index'])->name('permissions');
-    // });
-
     Route::prefix('files')->group(function () {
         Route::get('/', [FileController::class, 'index'])->name('files');
     });
 });
 
-// Auth Routes
+// Guest Routes
 Route::middleware('guest')->group(function () {
-    Route::get('/login', [AuthController::class, 'login'])->name('login');
-    Route::post('/login', [AuthenticationApi::class, 'login'])->name('login.authenticate');
+    Route::get('/login', [LoginController::class, 'login'])->name('login');
+    Route::post('/login', [AuthController::class, 'login'])->name('auth.login');
 });
 
-Route::post('/logout', [AuthenticationApi::class, 'logout'])->name('logout');
+// Auth Routes
+Route::middleware(['jwt'])->group(function () {
+    Route::get('/me', [AuthController::class, 'me'])->name('me');
+    Route::get('/refresh', [AuthController::class, 'refresh'])->name('refresh');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+});
 
+// Language Routes
 Route::get('/api/languages', function () {
     return response()->json([
         'current' => app()->getLocale(),

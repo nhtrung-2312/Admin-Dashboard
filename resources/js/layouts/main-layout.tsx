@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { User } from '@/types';
 import { useEffect, useState } from 'react';
@@ -25,9 +25,8 @@ export default function MainLayout({ children, user, translations }: MainLayoutP
                 }
             });
 
-            if (response.data.status && response.data.redirect) {
-                window.location.href = response.data.redirect;
-            }
+            router.visit('/login');
+
         } catch (error: any) {
             console.error(translations.auth.error);
         }
@@ -45,7 +44,7 @@ export default function MainLayout({ children, user, translations }: MainLayoutP
                                     <span className="text-xl font-bold text-gray-900">{translations.dashboard} </span>
                                 </Link>
                             </div>
-                            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+                            <div className="hidden lg:ml-6 lg:flex lg:space-x-8">
                                 <Link
                                     hidden={!user.permissions.includes("view_users")}
                                     href={route('home')}
@@ -79,9 +78,20 @@ export default function MainLayout({ children, user, translations }: MainLayoutP
                                 >
                                     {translations.roles}
                                 </Link>
+                                <Link
+                                    // hidden={!user.permissions.includes("view_roles")}
+                                    href={route('files')}
+                                    className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                                        route().current('files')
+                                            ? 'border-indigo-500 text-gray-900'
+                                            : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                                    }`}
+                                >
+                                    {translations.files}
+                                </Link>
                             </div>
                         </div>
-                        <div className="hidden sm:flex sm:items-center">
+                        <div className="hidden lg:flex sm:items-center">
                             <div className="sm:ml-6 sm:flex sm:items-center">
                                 <div className="flex items-center space-x-4">
                                     <LanguageSwitcher />
@@ -100,7 +110,7 @@ export default function MainLayout({ children, user, translations }: MainLayoutP
                                 </div>
                             </div>
                         </div>
-                        <div className="sm:hidden flex items-center justify-center">
+                        <div className="lg:hidden flex items-center justify-center">
                             <button
                                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                                 className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
@@ -129,7 +139,7 @@ export default function MainLayout({ children, user, translations }: MainLayoutP
                     </div>
                 </div>
 
-                <div className={`${isMobileMenuOpen ? 'block' : 'hidden'} sm:hidden`}>
+                <div className={`${isMobileMenuOpen ? 'block' : 'hidden'} lg:hidden`}>
                     <div className="pt-2 pb-3 space-y-1">
                         <Link
                             href={route('home')}
@@ -151,6 +161,26 @@ export default function MainLayout({ children, user, translations }: MainLayoutP
                         >
                             {translations.products}
                         </Link>
+                        <Link
+                            href={route('roles')}
+                            className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                                route().current('roles')
+                                    ? 'bg-indigo-50 border-indigo-500 text-indigo-700'
+                                    : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800'
+                            }`}
+                        >
+                            {translations.roles}
+                        </Link>
+                        <Link
+                            href={route('files')}
+                            className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                                route().current('files')
+                                    ? 'bg-indigo-50 border-indigo-500 text-indigo-700'
+                                    : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800'
+                            }`}
+                        >
+                            {translations.files}
+                        </Link>
                     </div>
                     <div className="pt-4 pb-3 border-t border-gray-200">
                         <div className="flex items-center px-4">
@@ -161,14 +191,12 @@ export default function MainLayout({ children, user, translations }: MainLayoutP
                                     </span>
                                 </div>
                             </div>
-                            <div className="ml-3">
+                            <div className="ml-3 flex items-center justify-between w-full">
                                 <div className="text-base font-medium text-gray-800">{user.name}</div>
+                                <LanguageSwitcher />
                             </div>
                         </div>
                         <div className="mt-3 space-y-1">
-                            <div className="px-4 py-2">
-                                <LanguageSwitcher />
-                            </div>
                             <button
                                 onClick={handleLogout}
                                 className="block w-full text-left px-4 py-2 text-base font-medium text-red-600 hover:bg-gray-100 hover:text-red-800"

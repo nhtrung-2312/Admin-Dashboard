@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use Illuminate\Support\Facades\Auth;
 use Tighten\Ziggy\Ziggy;
 
 class HandleInertiaRequests extends Middleware
@@ -39,21 +40,23 @@ class HandleInertiaRequests extends Middleware
     {
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
+        $user = Auth::guard('api')->user();
+
         return array_merge(parent::share($request), [
             'name' => config('app.name'),
             'auth' => [
-                'user' => $request->user() ? [
-                    'id' => $request->user()->id,
-                    'name' => $request->user()->name,
-                    'email' => $request->user()->email,
-                    'group_role' => $request->user()->group_role,
-                    'is_active' => $request->user()->is_active,
-                    'is_delete' => $request->user()->is_delete,
-                    'last_login_at' => $request->user()->last_login_at,
-                    'created_at' => $request->user()->created_at,
-                    'updated_at' => $request->user()->updated_at,
-                    'roles' => $request->user()->getRoleNames(),
-                    'permissions' => $request->user()->getAllPermissions()->pluck('name')->toArray()
+                'user' => $user ? [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'group_role' => $user->group_role,
+                    'is_active' => $user->is_active,
+                    'is_delete' => $user->is_delete,
+                    'last_login_at' => $user->last_login_at,
+                    'created_at' => $user->created_at,
+                    'updated_at' => $user->updated_at,
+                    'roles' => $user->roles->pluck('name')->toArray(),
+                    'permissions' => $user->roles->pluck('permissions')->flatten()->pluck('name')->toArray()
                 ] : null,
             ],
             'flash' => [

@@ -10,82 +10,115 @@ import axios from 'axios';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getCurrentTimestamp } from '@/hooks/getCurrentTimeStamp';
-import { get } from "lodash";
 
 interface Props {
     auth: {
         user: User;
     }
     translations: any;
+    roles: string[];
+}
+interface FilterOptions {
+    users: {
+        is_active: number;
+        group_role: string;
+        start_date: string;
+        end_date: string;
+        sort_field: string;
+        sort_direction: string;
+    };
+    products: {
+        status: number;
+        price_from: number;
+        price_to: number;
+        start_date: string;
+        end_date: string;
+        sort_field: string;
+        sort_direction: string;
+    };
 }
 
-interface FilePreview {
-    rows: number;
-    columns: number;
-    headers: string[];
-    previewData: any[];
-}
-
-export default function Index({auth, translations} : Props) {
+export default function Index({auth, roles, translations} : Props) {
     const [isLoading, setIsLoading] = useState(false);
     const [selectedExport, setSelectedExport] = useState<string>('');
     const [selectedImport, setSelectedImport] = useState<string>('');
     const [cleanImport, setCleanImport] = useState(false);
-    const [filePreview, setFilePreview] = useState<FilePreview | null>(null);
+    const [filterOptions, setFilterOptions] = useState<FilterOptions>({
+        users: {
+            is_active: 0,
+            group_role: '',
+            start_date: '',
+            end_date: '',
+            sort_field: 'created_at',
+            sort_direction: 'desc'
+        },
+        products: {
+            status: -1,
+            price_from: 0,
+            price_to: 0,
+            start_date: '',
+            end_date: '',
+            sort_field: 'created_at',
+            sort_direction: 'desc'
+        }
+    });
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [selectedFileName, setSelectedFileName] = useState<string>('');
 
-    const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
+    const handleImport = async () => {
+        if (!selectedImport || !selectedFile) {
+            toast.error('Vui lòng chọn bảng và file!');
+            return;
+        }
 
         setIsLoading(true);
+
         try {
-            console.log(file);
+            const response = await axios.post('/api/files/import', {
+                file: selectedFile,
+                table: selectedImport,
+                clean: cleanImport.toString()
+            }, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
 
+            toast.success(response.data.message || translations.file.import_success);
+            setSelectedFile(null);
+            setSelectedFileName('');
 
-            // const response = await axios.post('/api/files/import', file, {
-            //     headers: {
-            //         'Content-Type': 'multipart/form-data'
-            //     }
-            // });
-            // setFilePreview(response.data);
-
-            toast.success(translations.file.import_success);
-        } catch (error) {
-            toast.error(translations.file.import_error);
+        } catch (error: any) {
+            // Xử lý các loại lỗi khác nhau
+            if (error.response?.status === 422) {
+                // Lỗi validation
+                const errors = error.response.data.errors;
+                if (Array.isArray(errors)) {
+                    errors.forEach((err: string) => toast.error(err));
+                } else {
+                    toast.error(error.response.data.message || translations.file.import_error);
+                }
+            } else {
+                console.log(error.response.data.message);
+            }
         } finally {
             setIsLoading(false);
         }
     };
 
-    const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
-
-        setIsLoading(true);
-        try {
-            console.log(file);
-
-
-            // const response = await axios.post('/api/files/import', file, {
-            //     headers: {
-            //         'Content-Type': 'multipart/form-data'
-            //     }
-            // });
-            // setFilePreview(response.data);
-
-            toast.success(translations.file.import_success);
-        } catch (error) {
-            toast.error(translations.file.import_error);
-        } finally {
-            setIsLoading(false);
-        }
-    }
+        setSelectedFile(file);
+        setSelectedFileName(file.name);
+    };
 
     const handleExport = async () => {
         setIsLoading(true);
         try {
             const response = await axios.post('/api/files/export', {
-                table: selectedExport
+                table: selectedExport,
+                filter: { ...filterOptions[selectedExport as keyof FilterOptions] }
             }, {
                 responseType: 'blob'
             });
@@ -100,7 +133,7 @@ export default function Index({auth, translations} : Props) {
                 // Tạo link tải xuống
                 const link = document.createElement('a');
                 link.href = url;
-                link.setAttribute('download', `users_${getCurrentTimestamp()}.xlsx`);
+                link.setAttribute('download', `${selectedExport}_${getCurrentTimestamp()}.xlsx`);
                 document.body.appendChild(link);
                 link.click();
 
@@ -119,10 +152,140 @@ export default function Index({auth, translations} : Props) {
                 reader.readAsText(response.data);
             }
         } catch (error) {
-            console.error('Export error:', error);
             toast.error(translations.file.export_error);
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const renderFilterForm = () => {
+        if (!selectedExport) return null;
+
+        switch(selectedExport) {
+            case 'users':
+                return (
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium mb-2">{translations.file.export_status}</label>
+                            <Select
+                                value={filterOptions.users.is_active.toString()}
+                                onValueChange={(value) =>
+                                    setFilterOptions((prev: FilterOptions) => ({
+                                        ...prev,
+                                        users: { ...prev.users, is_active: parseInt(value) }
+                                    }))
+                                }
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder={translations.file.export_status_placeholder} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="0">{translations.file.export_status_all}</SelectItem>
+                                    <SelectItem value="1">{translations.file.export_status_online}</SelectItem>
+                                    <SelectItem value="2">{translations.file.export_status_offline}</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium mb-2">{translations.file.export_role}</label>
+                            <Select
+                                value={filterOptions.users.group_role}
+                                onValueChange={(value) =>
+                                    setFilterOptions(prev => ({
+                                        ...prev,
+                                        users: { ...prev.users, group_role: value }
+                                    }))
+                                }
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder={translations.file.export_role_placeholder} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {roles.map((role) => (
+                                        <SelectItem key={role} value={role}>
+                                            {role.charAt(0).toUpperCase() + role.slice(1)}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        {/* Thêm các filter khác cho user */}
+                    </div>
+                );
+
+            case 'products':
+                return (
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium mb-2">{translations.file.export_status}</label>
+                            <Select
+                                value={filterOptions.products.status.toString()}
+                                onValueChange={(value) =>
+                                    setFilterOptions(prev => ({
+                                        ...prev,
+                                        products: { ...prev.products, status: parseInt(value) }
+                                    }))
+                                }
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Chọn trạng thái" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="-1">{translations.file.export_status_all}</SelectItem>
+                                    <SelectItem value="0">{translations.file.export_product_stop}</SelectItem>
+                                    <SelectItem value="1">{translations.file.export_product_sell}</SelectItem>
+                                    <SelectItem value="2">{translations.file.export_product_out}</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium mb-2">{translations.file.export_price_range_min}</label>
+                                <Input
+                                    type="text"
+                                    min="0"
+                                    maxLength={10}
+                                    value={filterOptions.products.price_from || ''}
+                                    onChange={(e) => {
+                                        const value = parseInt(e.target.value);
+                                        setFilterOptions(prev => ({
+                                            ...prev,
+                                            products: {
+                                                ...prev.products,
+                                                price_from: isNaN(value) ? 0 : value
+                                            }
+                                        }));
+                                    }}
+                                    placeholder="0"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-2">{translations.file.export_price_range_max}</label>
+                                <Input
+                                    type="text"
+                                    min="0"
+                                    maxLength={10}
+                                    value={filterOptions.products.price_to || ''}
+                                    onChange={(e) => {
+                                        const value = parseInt(e.target.value);
+                                        setFilterOptions(prev => ({
+                                            ...prev,
+                                            products: {
+                                                ...prev.products,
+                                                price_to: isNaN(value) ? 0 : value
+                                            }
+                                        }));
+                                    }}
+                                    placeholder="0"
+                                />
+                            </div>
+                        </div>
+                        {/* Thêm các filter khác cho product */}
+                    </div>
+                );
         }
     };
 
@@ -142,90 +305,105 @@ export default function Index({auth, translations} : Props) {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     {/* Import Section */}
-                                    <div className="border rounded-lg p-6">
-                                        <h3 className="text-lg font-medium mb-4">{translations.file.import_title}</h3>
-                                        <p className="text-sm text-gray-500 mb-4">{translations.file.import_description}</p>
+                                    <div className="border rounded-lg p-6 shadow-lg">
+                                        <h3 className="text-lg font-semibold mb-4">{translations.file.import_title}</h3>
+                                        <p className="text-sm text-gray-500 mb-6">{translations.file.import_description}</p>
 
-                                        <div className="space-y-4">
+                                        <div className="space-y-6">
+                                            {/* Table Select */}
                                             <div>
-                                                <label className="block text-sm font-medium mb-2">Chọn bảng</label>
+                                                <label className="block text-sm font-medium mb-2">{translations.file.table_import}</label>
                                                 <Select value={selectedImport} onValueChange={setSelectedImport}>
                                                     <SelectTrigger>
-                                                        <SelectValue placeholder="Chọn bảng" />
+                                                        <SelectValue placeholder={translations.file.table_placeholder} />
                                                     </SelectTrigger>
                                                     <SelectContent>
-                                                        <SelectItem value="users">Users</SelectItem>
-                                                        <SelectItem value="products">Products</SelectItem>
+                                                        <SelectItem value="users">{translations.file.table_user}</SelectItem>
+                                                        <SelectItem value="products">{translations.file.table_product}</SelectItem>
                                                     </SelectContent>
                                                 </Select>
                                             </div>
 
-                                            <div className="w-full">
+                                            {/* File Input */}
+                                            <div>
                                                 <label htmlFor="file-upload" className="block text-sm font-medium mb-2">
                                                     {translations.file.input_title}
                                                 </label>
-                                                <input
-                                                    type="file"
-                                                    id="file-upload"
-                                                    onChange={handleFileSelect}
-                                                    accept=".xlsx,.xls,.csv"
-                                                    disabled={isLoading}
-                                                />
-                                                <p className="mt-1 text-sm text-red-600 dark:text-red-600" id="file_input_help">
-                                                    Only .xlsx, .xls, .csv file. Max: 10MB.
-                                                </p>
-
-                                            </div>
-
-                                            <div className="space-y-2">
-                                                <div className="flex items-center space-x-2">
-                                                    <Checkbox
-                                                        id="clean-import"
-                                                        checked={cleanImport}
-                                                        onCheckedChange={(checked) => setCleanImport(checked as boolean)}
+                                                <div className="flex items-center space-x-4">
+                                                    <input
+                                                        type="file"
+                                                        id="file-upload"
+                                                        onChange={handleFileSelect}
+                                                        accept=".xlsx,.xls,.csv"
+                                                        disabled={isLoading}
+                                                        className="file-input file-input-bordered file-input-primary w-full"
                                                     />
-                                                    <label htmlFor="clean-import">Clean Import (Remove old data)</label>
+                                                    {selectedFileName && (
+                                                        <span className="text-xs text-gray-500">{selectedFileName}</span>
+                                                    )}
                                                 </div>
+                                                <p className="mt-2 text-xs text-gray-400" id="file_input_help">
+                                                    {translations.file.import_file_subtitle}
+                                                </p>
                                             </div>
 
-                                            <div className="space-y-2">
-                                                <Button 
-                                                    className="bg-blue-500 hover:bg-blue-600 text-white"
-                                                    disabled={isLoading || !selectedImport}
+                                            {/* Clean Import Checkbox */}
+                                            <div className="flex items-center space-x-2">
+                                                <Checkbox
+                                                    id="clean-import"
+                                                    checked={cleanImport}
+                                                    onCheckedChange={(checked) => setCleanImport(checked as boolean)}
+                                                    className="text-blue-600"
+                                                />
+                                                <label htmlFor="clean-import" className="text-sm">{translations.file.import_clean}</label>
+                                            </div>
+
+                                            {/* Import Button */}
+                                            <div>
+                                                <Button
+                                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg"
+                                                    disabled={isLoading || !selectedImport || !selectedFileName}
+                                                    onClick={handleImport}
                                                 >
                                                     {isLoading ? translations.file.loading : translations.file.import_button}
                                                 </Button>
                                             </div>
-
                                         </div>
                                     </div>
 
                                     {/* Export Section */}
-                                    <div className="border rounded-lg p-6">
-                                        <h3 className="text-lg font-medium mb-4">{translations.file.export_title}</h3>
-                                        <p className="text-sm text-gray-500 mb-4">{translations.file.export_description}</p>
+                                    <div className="border rounded-lg p-6 shadow-lg">
+                                        <h3 className="text-lg font-semibold mb-4">{translations.file.export_title}</h3>
+                                        <p className="text-sm text-gray-500 mb-6">{translations.file.export_description}</p>
 
-                                        <div className="space-y-4">
+                                        <div className="space-y-6">
+                                            {/* Table Select */}
                                             <div>
-                                                <label className="block text-sm font-medium mb-2">Chọn bảng</label>
+                                                <label className="block text-sm font-medium mb-2">{translations.file.table_export}</label>
                                                 <Select value={selectedExport} onValueChange={setSelectedExport}>
                                                     <SelectTrigger>
-                                                        <SelectValue placeholder="Chọn bảng" />
+                                                        <SelectValue placeholder={translations.file.table_placeholder} />
                                                     </SelectTrigger>
                                                     <SelectContent>
-                                                        <SelectItem value="users">Users</SelectItem>
-                                                        <SelectItem value="products">Products</SelectItem>
+                                                        <SelectItem value="users">{translations.file.table_user}</SelectItem>
+                                                        <SelectItem value="products">{translations.file.table_product}</SelectItem>
                                                     </SelectContent>
                                                 </Select>
                                             </div>
 
-                                            <Button
-                                                onClick={handleExport}
-                                                disabled={isLoading || !selectedExport}
-                                                className="bg-green-500 hover:bg-green-600 text-white"
-                                            >
-                                                {isLoading ? translations.file.loading : translations.file.export_button}
-                                            </Button>
+                                            {/* Render Filter Form */}
+                                            {renderFilterForm()}
+
+                                            {/* Export Button */}
+                                            <div>
+                                                <Button
+                                                    onClick={handleExport}
+                                                    disabled={isLoading || !selectedExport}
+                                                    className={`w-full py-2 rounded-lg ${isLoading ? 'bg-gray-500' : 'bg-green-600 hover:bg-green-700'} text-white`}
+                                                >
+                                                    {isLoading ? translations.file.loading : translations.file.export_button}
+                                                </Button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

@@ -22,4 +22,5 @@ return [
     'deleted' => 'This account have been delete, please contact to admin',
     'session_expired' => 'This session has expired, please log in again.',
     'no_permission' => 'You do not have permission to perform this action.',
+    'logout' => 'Logout successfully.',
 ];

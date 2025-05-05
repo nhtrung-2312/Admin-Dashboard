@@ -7,4 +7,5 @@ return [
     'roles' => 'Roles',
     'hello' => 'Hello',
     'logout' => 'Logout',
+    'files' => 'Files',
 ];

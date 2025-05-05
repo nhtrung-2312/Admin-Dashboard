@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from 'react';
-import { usePage } from '@inertiajs/react';
 import { Head } from '@inertiajs/react';
 import {
     Card,
@@ -10,13 +9,12 @@ import {
     CardFooter
 } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
-import { Globe } from 'lucide-react';
 import axios from 'axios';
 import { Bounce, toast, ToastContainer } from 'react-toastify';
+import { router } from '@inertiajs/react';
 
 interface Props {
     translations: Record<string, any>;
@@ -32,15 +30,14 @@ export default function Login({ translations }: Props) {
         password: '',
         remember: false
     });
-    const { flash } = usePage().props as any; 
 
     const startCooldown = (seconds: number) => {
         setThrottleTime(seconds);
-    
+
         if (cooldownTimer.current) {
             clearInterval(cooldownTimer.current);
         }
-    
+
         cooldownTimer.current = setInterval(() => {
             setThrottleTime(prev => {
                 if (prev <= 1) {
@@ -76,31 +73,20 @@ export default function Login({ translations }: Props) {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (throttleTime) return;
-        
+
         setProcessing(true);
         setErrors({});
 
         try {
-            const response = await axios.post('/login', formData, {
-                headers: {
-                    'X-Locale': translations.locale,
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            });
+            const response = await axios.post('/login', formData);
 
-            if(response.data.redirect) {
-                window.location.href = response.data.redirect; 
-            }
-
+            router.visit('/');
         } catch (error: any) {
             if (error.response) {
+                e.preventDefault();
                 const { status, data } = error.response;
                 switch (status) {
-                    case 403:
-                        setErrors({ password: translations.auth.no_permission });
-                        break;
-                    case 405:
+                    case 401:
                         setErrors({ password: translations.auth.failed });
                         break;
                     case 422:
@@ -121,24 +107,20 @@ export default function Login({ translations }: Props) {
         }
     };
 
-    useEffect(() => {
-        toast.error(flash.message);
-    }, [flash])
-
     return (
         <>
             <Head title={translations.login.title} />
 
             <ToastContainer
-                    position="top-right"
-                    autoClose={1000}
-                    hideProgressBar={false}
-                    newestOnTop={false}
-                    closeOnClick
-                    rtl={false}
-                    theme="light"
-                    transition={Bounce}
-                />
+                position="top-right"
+                autoClose={1000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                theme="light"
+                transition={Bounce}
+            />
 
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50">
                 <div className="absolute top-4 right-4">
@@ -169,20 +151,20 @@ export default function Login({ translations }: Props) {
                                     </p>
                                 </div>
                             )}
-                            
+
                             <div className="space-y-2">
                                 <Label htmlFor="email" className="text-sm font-medium text-gray-700">
                                     {translations.login.email}
                                 </Label>
                                 <input
                                     id="email"
-                                    name="email" 
+                                    name="email"
                                     type="text"
                                     value={formData.email}
                                     placeholder='example@gmail.com'
                                     onChange={handleInputChange}
                                     className={`w-full px-3 py-2 border rounded-md ${
-                                        errors.name ? 'border-red-500' : 'border-gray-300'
+                                        errors.email ? 'border-red-500' : 'border-gray-300'
                                     }`}
                                     autoComplete="email"
                                     autoCapitalize="none"
@@ -202,11 +184,11 @@ export default function Login({ translations }: Props) {
                                 <input
                                     id="password"
                                     name="password"
-                                    type="password" 
+                                    type="password"
                                     value={formData.password}
                                     onChange={handleInputChange}
                                     className={`w-full px-3 py-2 border rounded-md ${
-                                        errors.name ? 'border-red-500' : 'border-gray-300'
+                                        errors.password ? 'border-red-500' : 'border-gray-300'
                                     }`}
                                     placeholder='*******'
                                     autoComplete="current-password"
@@ -239,7 +221,7 @@ export default function Login({ translations }: Props) {
                                 className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md hover:shadow-lg transition-all duration-200 rounded-lg py-2"
                                 disabled={processing || throttleTime > 0}
                             >
-                                {processing ? 'Processing...' : translations.login.login}
+                                {processing ? translations.login.processing : translations.login.login}
                             </Button>
                         </CardFooter>
                     </form>

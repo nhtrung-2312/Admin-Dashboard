@@ -4,6 +4,13 @@ return [
     'head_title' => 'Quản lý File',
     'title' => 'Quản lý File',
     'subtitle' => 'Nhập và xuất dữ liệu của bạn',
+    'input_title' => 'Chọn File',
+
+    'table_import' => 'Chọn bảng để nhập',
+    'table_export' => 'Chọn bảng để xuất',
+    'table_placeholder' => 'Chọn bảng...',
+    'table_user' => 'Người dùng',
+    'table_product' => 'Sản phẩm',
 
     // Import section
     'import_title' => 'Nhập dữ liệu',
@@ -11,6 +18,8 @@ return [
     'import_button' => 'Chọn file để nhập',
     'import_success' => 'Nhập dữ liệu thành công',
     'import_error' => 'Có lỗi xảy ra khi nhập dữ liệu',
+    'import_file_subtitle' => 'Chỉ .xlsx, .xls, .csv. Tối đa: 10MB.',
+    'import_clean' => 'Nhập sạch (Xóa dữ liệu cũ)',
 
     // Export section
     'export_title' => 'Xuất dữ liệu',
@@ -19,6 +28,21 @@ return [
     'export_success' => 'Xuất dữ liệu thành công',
     'export_error' => 'Có lỗi xảy ra khi xuất dữ liệu',
 
+    'export_status' => 'Trạng thái',
+    'export_status_placeholder' => 'Chọn trạng thái...',
+    'export_status_online' => 'Đang hoạt động',
+    'export_status_offline' => 'Không hoạt động',
+    'export_status_all' => 'Tất cả',
+    'export_role' => 'Chức vụ',
+    'export_role_placeholder' => 'Chọn chức vụ...',
+    'export_product_sell' => 'Đang bán',
+    'export_product_out' => 'Hết hàng',
+    'export_product_stop' => 'Ngừng bán',
+    'export_price_range_title' => 'Khoảng giá',
+    'export_price_range_description' => 'Chọn khoảng giá cho sản phẩm',
+    'export_price_range_min' => 'Giá tối thiểu',
+    'export_price_range_max' => 'Giá tối đa',
+    'export_price_subtitle' => 'Để trống nếu không cần',
     // Common
     'loading' => 'Đang xử lý...',
 ];

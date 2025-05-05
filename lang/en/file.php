@@ -4,8 +4,13 @@ return [
     'head_title' => 'File Management',
     'title' => 'File Management',
     'subtitle' => 'Import and export your data',
-
     'input_title' => 'Choose File',
+
+    'table_import' => 'Choose table to import',
+    'table_export' => 'Choose table to export',
+    'table_placeholder' => 'Choose table...',
+    'table_user' => 'Users',
+    'table_product' => 'Products',
 
     // Import section
     'import_title' => 'Import Data',
@@ -13,6 +18,8 @@ return [
     'import_button' => 'Choose file to import',
     'import_success' => 'Data imported successfully',
     'import_error' => 'Error occurred while importing data',
+    'import_file_subtitle' => 'Only .xlsx, .xls, .csv file. Max: 10MB.',
+    'import_clean' => 'Clean Import (Remove old data)',
 
     // Export section
     'export_title' => 'Export Data',
@@ -20,6 +27,22 @@ return [
     'export_button' => 'Export Data',
     'export_success' => 'Data exported successfully',
     'export_error' => 'Error occurred while exporting data',
+
+    'export_status' => 'Status',
+    'export_status_placeholder' => 'Select status...',
+    'export_status_online' => 'Active',
+    'export_status_offline' => 'Inactive',
+    'export_status_all' => 'All',
+    'export_role' => 'Role',
+    'export_role_placeholder' => 'Select role...',
+    'export_product_sell' => 'Selling',
+    'export_prouct_out' => 'Out of stocks',
+    'export_product_stop' => 'Stopped',
+    'export_price_range_title' => 'Price Range',
+    'export_price_range_description' => 'Select price range for products',
+    'export_price_range_min' => 'Minimum Price',
+    'export_price_range_max' => 'Maximum Price',
+    'export_price_subtitle' => 'Leave empty if no price filter',
 
     // Common
     'loading' => 'Processing...',

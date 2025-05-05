@@ -15,7 +15,7 @@ class MstUserImport implements ToModel, WithHeadingRow, WithValidation
         return new MstUser([
             'name' => $row['name'],
             'email' => $row['email'],
-            'password' => Hash::make($row['password']),
+            'password' => bcrypt(explode('@', $row['email'])[0]),
             'group_role' => $row['group_role'],
             'is_active' => $row['is_active'] ?? true,
             'is_delete' => $row['is_delete'] ?? false,
@@ -27,7 +27,6 @@ class MstUserImport implements ToModel, WithHeadingRow, WithValidation
         return [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:mst_users,email',
-            'password' => 'required|min:6',
             'group_role' => 'required|string',
         ];
     }

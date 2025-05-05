@@ -15,9 +15,9 @@ class MstUserExport implements FromCollection, WithHeadings, WithMapping, WithSt
 {
     protected $users;
 
-    public function __construct($users = null)
+    public function __construct($users)
     {
-        $this->users = $users ?? MstUser::all();
+        $this->users = $users;
     }
 
     public function collection()
@@ -28,13 +28,13 @@ class MstUserExport implements FromCollection, WithHeadings, WithMapping, WithSt
     public function headings(): array
     {
         return [
-            'ID',
-            'Tên',
-            'Email',
-            'Nhóm quyền',
-            'Trạng thái',
-            'Ngày tạo',
-            'Ngày cập nhật'
+            __('export.export_id'),
+            __('export.export_name'),
+            __('export.export_email'),
+            __('export.export_group'),
+            __('export.export_status'),
+            __('export.export_created_at'),
+            __('export.export_updated_at')
         ];
     }
 
@@ -45,7 +45,7 @@ class MstUserExport implements FromCollection, WithHeadings, WithMapping, WithSt
             $user->name,
             $user->email,
             $user->group_role,
-            $user->is_active ? 'Hoạt động' : 'Không hoạt động',
+            $user->is_active ? __('export.active') : __('export.inactive'),
             $user->created_at->format('d/m/Y H:i:s'),
             $user->updated_at->format('d/m/Y H:i:s')
         ];

@@ -15,11 +15,12 @@ return [
 
     'failed' => 'Mật khẩu không chính xác.',
     'password' => 'Mật khẩu không chính xác.',
-    'throttle' => 'Đăng nhập sai quá nhiều lần. Thử lại sau.',
-    'system_failed' => 'Lỗi hệ thống, vui lòng thử lại sau.',
-    'not_authorize' => 'Bạn không có quyền để truy cập vào.',
-    'locked' => 'Tài khoản này đã bị khoá, hãy liên hệ với admin.',
-    'deleted' => 'Tài khoản này đã bị xoá, hãy liên hệ với admin.',
+    'throttle' => 'Đăng nhập sai quá nhiều lần. Vui lòng thử lại sau.',
+    'system_failed' => 'Đã xảy ra lỗi, vui lòng thử lại.',
+    'not_authorize' => 'Bạn không có quyền truy cập vào trang này.',
+    'locked' => 'Tài khoản này đã bị khóa, vui lòng liên hệ với quản trị viên.',
+    'deleted' => 'Tài khoản này đã bị xóa, vui lòng liên hệ với quản trị viên.',
     'session_expired' => 'Phiên làm việc đã hết hạn, vui lòng đăng nhập lại.',
     'no_permission' => 'Bạn không có quyền thực hiện hành động này.',
+    'logout' => 'Đăng xuất thành công.',
 ];

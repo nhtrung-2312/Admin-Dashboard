@@ -7,4 +7,5 @@ return [
     'roles' => 'Chức vụ',
     'hello' => 'Xin chào',
     'logout' => 'Đăng xuất',
+    'files' => 'Nhập/xuất'
 ];
