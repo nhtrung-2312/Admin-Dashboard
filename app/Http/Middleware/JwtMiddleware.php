@@ -20,7 +20,7 @@ class JwtMiddleware
 
             JWTAuth::parseToken()->authenticate();
         } catch (Exception $e) {
-            return redirect()->route('login')->withErrors(['email' => 'Bạn không có quyền truy cập.']);
+            return redirect()->route('login')->withErrors(['message' => __('auth.session_expired')]);
         }
 
         return $next($request);

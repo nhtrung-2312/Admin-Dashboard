@@ -20,6 +20,10 @@ return [
     'import_error' => 'Error occurred while importing data',
     'import_file_subtitle' => 'Only .xlsx, .xls, .csv file. Max: 10MB.',
     'import_clean' => 'Clean Import (Remove old data)',
+    'import_file_required' => 'File is required.',
+    'import_file_mimes' => 'File must be in the format: xlsx, xls, csv.',
+    'import_table_required' => 'Table is required.',
+    'import_table_string' => 'Table name must be a string.',
 
     // Export section
     'export_title' => 'Export Data',
@@ -43,6 +47,9 @@ return [
     'export_price_range_min' => 'Minimum Price',
     'export_price_range_max' => 'Maximum Price',
     'export_price_subtitle' => 'Leave empty if no price filter',
+
+    //System
+    'system_error' => 'An error occurred, please try again.',
 
     // Common
     'loading' => 'Processing...',

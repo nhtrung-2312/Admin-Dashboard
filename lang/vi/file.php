@@ -20,6 +20,10 @@ return [
     'import_error' => 'Có lỗi xảy ra khi nhập dữ liệu',
     'import_file_subtitle' => 'Chỉ .xlsx, .xls, .csv. Tối đa: 10MB.',
     'import_clean' => 'Nhập sạch (Xóa dữ liệu cũ)',
+    'import_file_required' => 'File là bắt buộc.',
+    'import_file_mimes' => 'File phải ở định dạng: xlsx, xls, csv.',
+    'import_table_required' => 'Bảng là bắt buộc.',
+    'import_table_string' => 'Tên bảng phải là một chuỗi.',
 
     // Export section
     'export_title' => 'Xuất dữ liệu',
@@ -43,6 +47,8 @@ return [
     'export_price_range_min' => 'Giá tối thiểu',
     'export_price_range_max' => 'Giá tối đa',
     'export_price_subtitle' => 'Để trống nếu không cần',
+
+    'system_error' => 'Có lỗi xảy ra, thử lại sau.',
     // Common
     'loading' => 'Đang xử lý...',
 ];

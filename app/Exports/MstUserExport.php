@@ -9,9 +9,10 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
+use Maatwebsite\Excel\Concerns\WithCustomCsvSettings;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class MstUserExport implements FromCollection, WithHeadings, WithMapping, WithStyles, WithColumnWidths
+class MstUserExport implements FromCollection, WithHeadings, WithMapping, WithStyles, WithColumnWidths, WithCustomCsvSettings
 {
     protected $users;
 
@@ -28,13 +29,13 @@ class MstUserExport implements FromCollection, WithHeadings, WithMapping, WithSt
     public function headings(): array
     {
         return [
-            __('export.export_id'),
-            __('export.export_name'),
-            __('export.export_email'),
-            __('export.export_group'),
-            __('export.export_status'),
-            __('export.export_created_at'),
-            __('export.export_updated_at')
+            'ID',
+            'Name',
+            'Email',
+            'Role',
+            'Status',
+            'Created At',
+            'Updated At'
         ];
     }
 
@@ -45,9 +46,9 @@ class MstUserExport implements FromCollection, WithHeadings, WithMapping, WithSt
             $user->name,
             $user->email,
             $user->group_role,
-            $user->is_active ? __('export.active') : __('export.inactive'),
-            $user->created_at->format('d/m/Y H:i:s'),
-            $user->updated_at->format('d/m/Y H:i:s')
+            $user->is_active ? 'Active' : 'Inactive',
+            $user->created_at->format('d/m/Y h:i:s A'),
+            $user->updated_at->format('d/m/Y h:i:s A')
         ];
     }
 
@@ -78,6 +79,14 @@ class MstUserExport implements FromCollection, WithHeadings, WithMapping, WithSt
             'E' => 20,  // Trạng thái
             'F' => 20,  // Ngày tạo
             'G' => 20,  // Ngày cập nhật
+        ];
+    }
+
+    public function getCsvSettings(): array
+    {
+        return [
+            'use_bom' => true,
+            'output_encoding' => 'UTF-8'
         ];
     }
 }

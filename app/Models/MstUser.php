@@ -7,10 +7,9 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\Permission\Traits\HasRoles;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
-
 class MstUser extends Authenticatable implements JWTSubject
 {
-    use HasFactory, Notifiable, HasRoles;
+    use HasRoles, HasFactory, Notifiable;
 
     protected $table = 'mst_users';
 

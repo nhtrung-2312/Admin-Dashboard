@@ -12,6 +12,12 @@ export default defineConfig({
         hmr: {
             host: 'localhost',
             protocol: 'ws'
+        },
+        watch: {
+            ignored: [
+                '**/storage/**',
+                '**/vendor/**',
+            ]
         }
     },
     plugins: [

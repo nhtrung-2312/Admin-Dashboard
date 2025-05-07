@@ -12,81 +12,11 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use App\Http\Requests\UserRequest;
 
-/**
- * @OA\Tag(
- *     name="Users",
- *     description="API Endpoints for user management"
- * )
- */
 class UserApi extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth:api');
-    }
-
-    /**
-     * @OA\Get(
-     *     path="/users",
-     *     summary="Get list of users",
-     *     tags={"Users"},
-     *     @OA\Parameter(
-     *         name="status",
-     *         in="query",
-     *         description="Filter by user status (active/inactive)",
-     *         required=false,
-     *         @OA\Schema(type="string", enum={"active", "inactive"})
-     *     ),
-     *     @OA\Parameter(
-     *         name="role",
-     *         in="query",
-     *         description="Filter by user role",
-     *         required=false,
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Parameter(
-     *         name="search",
-     *         in="query",
-     *         description="Search by name or email",
-     *         required=false,
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Parameter(
-     *         name="per_page",
-     *         in="query",
-     *         description="Number of items per page",
-     *         required=false,
-     *         @OA\Schema(type="integer", default=10)
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Successful operation",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="data", type="array", @OA\Items(
-     *                 @OA\Property(property="id", type="integer"),
-     *                 @OA\Property(property="name", type="string"),
-     *                 @OA\Property(property="email", type="string"),
-     *                 @OA\Property(property="group_role", type="string"),
-     *                 @OA\Property(property="is_active", type="boolean"),
-     *                 @OA\Property(property="created_at", type="string", format="date-time"),
-     *                 @OA\Property(property="updated_at", type="string", format="date-time")
-     *             )),
-     *             @OA\Property(property="meta", type="object",
-     *                 @OA\Property(property="current_page", type="integer"),
-     *                 @OA\Property(property="from", type="integer"),
-     *                 @OA\Property(property="last_page", type="integer"),
-     *                 @OA\Property(property="per_page", type="integer"),
-     *                 @OA\Property(property="to", type="integer"),
-     *                 @OA\Property(property="total", type="integer")
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error"
-     *     )
-     * )
-     */
+    //
+    //  Get user list with filter
+    //
     public function index(Request $request)
     {
         try {
@@ -151,35 +81,6 @@ class UserApi extends Controller
         }
     }
 
-    /**
-     * @OA\Post(
-     *     path="/users",
-     *     summary="Create a new user",
-     *     tags={"Users"},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"name", "email", "group_role", "is_active"},
-     *             @OA\Property(property="name", type="string", example="John Doe"),
-     *             @OA\Property(property="email", type="string", format="email", example="john@example.com"),
-     *             @OA\Property(property="group_role", type="string", example="admin"),
-     *             @OA\Property(property="is_active", type="boolean", example=true)
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=201,
-     *         description="User created successfully"
-     *     ),
-     *     @OA\Response(
-     *         response=422,
-     *         description="Validation error"
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error"
-     *     )
-     * )
-     */
     public function store(UserRequest $request)
     {
         try {
@@ -214,46 +115,6 @@ class UserApi extends Controller
         }
     }
 
-    /**
-     * @OA\Put(
-     *     path="/users/{id}",
-     *     summary="Update an existing user",
-     *     tags={"Users"},
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         required=true,
-     *         description="User ID",
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"name", "email", "group_role", "is_active"},
-     *             @OA\Property(property="name", type="string", example="John Doe"),
-     *             @OA\Property(property="email", type="string", format="email", example="john@example.com"),
-     *             @OA\Property(property="group_role", type="string", example="admin"),
-     *             @OA\Property(property="is_active", type="boolean", example=true)
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="User updated successfully"
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="User not found"
-     *     ),
-     *     @OA\Response(
-     *         response=422,
-     *         description="Validation error"
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error"
-     *     )
-     * )
-     */
     public function update(UserRequest $request, MstUser $user)
     {
         //Try to find the user
@@ -286,32 +147,6 @@ class UserApi extends Controller
         }
     }
 
-    /**
-     * @OA\Delete(
-     *     path="/users/{id}",
-     *     summary="Delete a user",
-     *     tags={"Users"},
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         required=true,
-     *         description="User ID",
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="User deleted successfully"
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="User not found"
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error"
-     *     )
-     * )
-     */
     public function destroy(string $id)
     {
         $user = MstUser::find($id);

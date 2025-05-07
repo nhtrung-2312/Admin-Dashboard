@@ -7,6 +7,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\Api\ProductApi;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\FileApi;
+use App\Http\Controllers\Api\FileLogApi;
 use App\Http\Controllers\Api\PermissionApi;
 use App\Http\Controllers\Api\RoleApi;
 use App\Http\Controllers\FileController;
@@ -73,6 +74,19 @@ Route::prefix('api')->name('api.')->middleware(['jwt'])->group(function () {
     Route::prefix('files')->group(function () {
         Route::post('/import', [FileApi::class, 'import'])->name('file.import');
         Route::post('/export', [FileApi::class, 'export'])->name('file.export');
+
+        Route::prefix('log')->group(function() {
+            Route::get('/', [FileLogApi::class, 'index'])->name('file.log.index');
+        });
+    });
+
+
+
+    Route::get('languages', function () {
+        return response()->json([
+            'current' => app()->getLocale(),
+            'available' => config('app.available_locales')
+        ]);
     });
 });
 
@@ -94,33 +108,22 @@ Route::middleware(['jwt'])->group(function () {
     Route::prefix('files')->group(function () {
         Route::get('/', [FileController::class, 'index'])->name('files');
     });
+
+    Route::get('/me', [AuthController::class, 'me'])->name('me');
+    Route::get('/refresh', [AuthController::class, 'refresh'])->name('refresh');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+    Route::get('/lang/{locale?}', function ($locale = null) {
+        if ($locale && in_array($locale, config('app.available_locales'))) {
+            app()->setLocale($locale);
+            session()->put('locale', $locale);
+        }
+        return redirect()->back();
+    });
 });
 
 // Guest Routes
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'login'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->name('auth.login');
-});
-
-// Auth Routes
-Route::middleware(['jwt'])->group(function () {
-    Route::get('/me', [AuthController::class, 'me'])->name('me');
-    Route::get('/refresh', [AuthController::class, 'refresh'])->name('refresh');
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-});
-
-// Language Routes
-Route::get('/api/languages', function () {
-    return response()->json([
-        'current' => app()->getLocale(),
-        'available' => config('app.available_locales')
-    ]);
-});
-
-Route::get('/lang/{locale?}', function ($locale = null) {
-    if ($locale && in_array($locale, config('app.available_locales'))) {
-        app()->setLocale($locale);
-        session()->put('locale', $locale);
-    }
-    return redirect()->back();
 });
