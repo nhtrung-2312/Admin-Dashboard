@@ -20,4 +20,17 @@ class Product extends Model
     protected $keyType = 'string';
     public $incrementing = false;
     public $timestamps = true;
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saving(function ($product) {
+            if ($product->quantity == 0) {
+                $product->status = 2;
+            } elseif($product->status == 2 && $product->quantity > 0) {
+                $product->status = 1;
+            }
+        });
+    }
 }

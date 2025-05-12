@@ -76,8 +76,14 @@ Route::prefix('api')->name('api.')->middleware(['jwt'])->group(function () {
         Route::post('/export', [FileApi::class, 'export'])->name('file.export');
 
         Route::prefix('log')->group(function() {
-            Route::get('/', [FileLogApi::class, 'index'])->name('file.log.index');
+            Route::get('/', [FileLogApi::class, 'index'])->name('file.log');
         });
+
+        Route::prefix('details')->group(function() {
+            Route::get('/', [FileLogApi::class, 'index'])->name('file.details');
+        });
+
+        Route::get('/download/{id}', [FileLogApi::class, 'download'])->name('file.download');
     });
 
 
@@ -107,6 +113,7 @@ Route::middleware(['jwt'])->group(function () {
 
     Route::prefix('files')->group(function () {
         Route::get('/', [FileController::class, 'index'])->name('files');
+        Route::get('/details/{id}', [FileController::class, 'details'])->name('files.details');
     });
 
     Route::get('/me', [AuthController::class, 'me'])->name('me');

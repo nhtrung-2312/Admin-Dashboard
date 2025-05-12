@@ -35,10 +35,10 @@ class ProductExport implements FromCollection, WithHeadings, WithMapping, WithSt
             'Price',
             'Quantity',
             'Image',
-            'Delete Status',
             'Status',
             'Created At',
             'Last Updated',
+            'Delete At',
         ];
     }
 
@@ -48,13 +48,13 @@ class ProductExport implements FromCollection, WithHeadings, WithMapping, WithSt
             $product->id,
             $product->name,
             $product->description,
-            $product->price,
-            $product->quantity,
+            $product->price ?? 0,
+            $product->quantity ?? 0,
             $product->image_url,
-            $product->is_deleted ? 'Deleted' : '',
-            $product->status === 0 ? 'Stopped' : ($product->status === 1 ? 'Selling' : 'Out of stock'),
+            $product->status === 0 ? 'Discontinued' : ($product->status === 1 ? 'Selling' : 'Out of stock'),
             $product->created_at->format('d/m/Y H:i:s'),
-            $product->updated_at->format('d/m/Y H:i:s')
+            $product->updated_at->format('d/m/Y H:i:s'),
+            $product->deleted_at ? $product->deleted_at->format('d/m/Y H:i:s') : ''
         ];
     }
 

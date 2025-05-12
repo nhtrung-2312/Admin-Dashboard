@@ -2,15 +2,15 @@ import { User } from "@/types"
 import MainLayout from '@/layouts/main-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import React, { useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/ReactToastify.css';
 import axios from 'axios';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { getCurrentTimestamp } from '@/hooks/getCurrentTimeStamp';
-import { count } from "console";
+import { Transgender } from "lucide-react";
+
 interface Props {
     auth: {
         user: User;
@@ -23,6 +23,7 @@ interface FilterOptions {
     users: {
         is_active: number;
         group_role: string;
+        file_type: string;
         start_date: string;
         end_date: string;
         sort_field: string;
@@ -32,6 +33,7 @@ interface FilterOptions {
         status: number;
         price_from: number;
         price_to: number;
+        file_type: string;
         start_date: string;
         end_date: string;
         sort_field: string;
@@ -46,7 +48,7 @@ interface FileHistory {
     type: 'import' | 'export';
     table_name: string;
     total_records: number;
-    status: string;
+    status: number;
     created_at: string;
 }
 
@@ -60,25 +62,26 @@ export default function Index({auth, roles, translations} : Props) {
             is_active: 0,
             group_role: '',
             start_date: '',
+            file_type: 'csv',
             end_date: '',
-            sort_field: 'created_at',
-            sort_direction: 'desc'
+            sort_field: 'id',
+            sort_direction: 'asc'
         },
         products: {
             status: -1,
             price_from: 0,
             price_to: 0,
+            file_type: 'csv',
             start_date: '',
             end_date: '',
-            sort_field: 'created_at',
-            sort_direction: 'desc'
+            sort_field: 'id',
+            sort_direction: 'asc'
         }
     });
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [selectedFileName, setSelectedFileName] = useState<string>('');
     const [histories, setHistories] = useState<FileHistory[]>([]);
     const [activeTab, setActiveTab] = useState('import');
-    const [showErrorDetails, setShowErrorDetails] = useState<FileHistory | null>(null);
 
     const handleImport = async () => {
         if (!selectedImport || !selectedFile) {
@@ -135,39 +138,11 @@ export default function Index({auth, roles, translations} : Props) {
             const response = await axios.post('/api/files/export', {
                 table: selectedExport,
                 filter: { ...filterOptions[selectedExport as keyof FilterOptions] }
-            }, {
-                responseType: 'blob',
-                headers: {
-                    'Accept': 'text/csv; charset=utf-8',
-                }
             });
 
-
-            const name = response.headers['x-filename'];
-
-            // Tạo blob với charset UTF-8
-            const blob = new Blob([response.data], { type: 'text/csv;charset=utf-8;' });
-
-            // Tạo URL từ blob
-            const url = URL.createObjectURL(blob);
-
-            // Tạo link tải xuống
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = name;
-            link.style.display = 'none';
-
-            // Thêm vào DOM và kích hoạt click
-            document.body.appendChild(link);
-            link.click();
-
-            // Dọn dẹp
-            setTimeout(() => {
-                URL.revokeObjectURL(url);
-                link.remove();
-            }, 100);
-
-            toast.success(translations.file.export_success);
+            if(response.status === 201) {
+                toast.success(response.data.message)
+            }
         } catch (error) {
             console.error('Export error:', error);
             toast.error(translations.file.export_error);
@@ -194,7 +169,7 @@ export default function Index({auth, roles, translations} : Props) {
                                     }))
                                 }
                             >
-                                <SelectTrigger>
+                                <SelectTrigger className="w-full h-12 text-base border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-xl">
                                     <SelectValue placeholder={translations.file.export_status_placeholder} />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -216,7 +191,7 @@ export default function Index({auth, roles, translations} : Props) {
                                     }))
                                 }
                             >
-                                <SelectTrigger>
+                                <SelectTrigger className="w-full h-12 text-base border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-xl">
                                     <SelectValue placeholder={translations.file.export_role_placeholder} />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -229,7 +204,26 @@ export default function Index({auth, roles, translations} : Props) {
                             </Select>
                         </div>
 
-                        {/* Thêm các filter khác cho user */}
+                        <div>
+                            <label className="block text-sm font-medium mb-2">{translations.file.export_file_type_placeholder}</label>
+                            <Select
+                                value={filterOptions.users.file_type}
+                                onValueChange={(value) =>
+                                    setFilterOptions(prev => ({
+                                        ...prev,
+                                        users: { ...prev.users, file_type: value }
+                                    }))
+                                }
+                            >
+                                <SelectTrigger className="w-full h-12 text-base border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-xl">
+                                    <SelectValue/>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem key="csv" value="csv">CSV</SelectItem>
+                                    <SelectItem key="xlsx" value="xlsx">XLSX</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
                 );
 
@@ -247,7 +241,7 @@ export default function Index({auth, roles, translations} : Props) {
                                     }))
                                 }
                             >
-                                <SelectTrigger>
+                                <SelectTrigger className="w-full h-12 text-base border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-xl">
                                     <SelectValue placeholder="Chọn trạng thái" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -263,6 +257,7 @@ export default function Index({auth, roles, translations} : Props) {
                             <div>
                                 <label className="block text-sm font-medium mb-2">{translations.file.export_price_range_min}</label>
                                 <Input
+                                    className="w-full h-12 text-base border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-xl"
                                     type="text"
                                     min="0"
                                     maxLength={10}
@@ -283,6 +278,7 @@ export default function Index({auth, roles, translations} : Props) {
                             <div>
                                 <label className="block text-sm font-medium mb-2">{translations.file.export_price_range_max}</label>
                                 <Input
+                                    className="w-full h-12 text-base border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-xl"
                                     type="text"
                                     min="0"
                                     maxLength={10}
@@ -301,7 +297,27 @@ export default function Index({auth, roles, translations} : Props) {
                                 />
                             </div>
                         </div>
-                        {/* Thêm các filter khác cho product */}
+
+                        <div>
+                            <label className="block text-sm font-medium mb-2">{translations.file.export_file_type_placeholder}</label>
+                            <Select
+                                value={filterOptions.products.file_type}
+                                onValueChange={(value) =>
+                                    setFilterOptions(prev => ({
+                                        ...prev,
+                                        products: { ...prev.products, file_type: value }
+                                    }))
+                                }
+                            >
+                                <SelectTrigger className="w-full h-12 text-base border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-xl">
+                                    <SelectValue/>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem key="csv" value="csv">CSV</SelectItem>
+                                    <SelectItem key="xlsx" value="xlsx">XLSX</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
                 );
         }
@@ -322,14 +338,16 @@ export default function Index({auth, roles, translations} : Props) {
 
     const handleDownload = async (id: number) => {
         try {
-            const response = await axios.get(`/api/files/history/${id}/download`, {
+            const response = await axios.get(`/api/files/download/${id}`, {
                 responseType: 'blob'
             });
 
+            const name = response.headers['x-filename'];
             const url = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement('a');
+
             link.href = url;
-            link.setAttribute('download', `file_${id}.csv`);
+            link.setAttribute('download', name);
             document.body.appendChild(link);
             link.click();
             link.remove();
@@ -359,15 +377,15 @@ export default function Index({auth, roles, translations} : Props) {
                         <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                             <div className="p-6 text-gray-900">
                                 <div className="mb-8">
-                                    <h2 className="text-3xl font-bold text-gray-900">{translations.file.title}</h2>
-                                    <p className="mt-2 text-gray-600">{translations.file.subtitle}</p>
+                                    <h2 className="text-2xl font-bold text-gray-900">{translations.file.title}</h2>
+                                    <p className="text-sm mt-2 text-gray-600">{translations.file.subtitle}</p>
                                 </div>
 
                                 {/* Tabs */}
                                 <div className="mb-8">
                                     <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
                                         <button
-                                            className={`py-4 px-8 text-lg font-medium rounded-xl flex-1 transition-all duration-200 ${
+                                            className={`py-4 px-8 text-md font-medium rounded-xl flex-1 transition-all duration-200 ${
                                                 activeTab === 'import'
                                                 ? 'bg-blue-50 text-blue-600 shadow-sm'
                                                 : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
@@ -377,7 +395,7 @@ export default function Index({auth, roles, translations} : Props) {
                                             Import
                                         </button>
                                         <button
-                                            className={`py-4 px-8 text-lg font-medium rounded-xl flex-1 transition-all duration-200 ${
+                                            className={`py-4 px-8 text-md font-medium rounded-xl flex-1 transition-all duration-200 ${
                                                 activeTab === 'export'
                                                 ? 'bg-blue-50 text-blue-600 shadow-sm'
                                                 : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
@@ -387,7 +405,7 @@ export default function Index({auth, roles, translations} : Props) {
                                             Export
                                         </button>
                                         <button
-                                            className={`py-4 px-8 text-lg font-medium rounded-xl flex-1 transition-all duration-200 ${
+                                            className={`py-4 px-8 text-md font-medium rounded-xl flex-1 transition-all duration-200 ${
                                                 activeTab === 'history'
                                                 ? 'bg-blue-50 text-blue-600 shadow-sm'
                                                 : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
@@ -397,7 +415,7 @@ export default function Index({auth, roles, translations} : Props) {
                                                 fetchHistories();
                                             }}
                                         >
-                                            Lịch sử
+                                            Log
                                         </button>
                                     </div>
                                 </div>
@@ -407,14 +425,14 @@ export default function Index({auth, roles, translations} : Props) {
                                     <div className="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm hover:shadow-md transition-all duration-200">
                                         <div className="space-y-8">
                                             <div>
-                                                <label className="block text-lg font-medium mb-3 text-gray-900">Chọn bảng</label>
+                                                <label className="block text-sm font-medium mb-2">{translations.file.table}</label>
                                                 <Select value={selectedImport} onValueChange={setSelectedImport}>
-                                                    <SelectTrigger className="w-full h-12 text-base border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-xl">
-                                                        <SelectValue placeholder="Chọn bảng" />
+                                                    <SelectTrigger className="w-facll h-12 text-base border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-xl">
+                                                        <SelectValue placeholder={translations.file.table_placeholder} />
                                                     </SelectTrigger>
                                                     <SelectContent>
-                                                        <SelectItem value="users">Users</SelectItem>
-                                                        <SelectItem value="products">Products</SelectItem>
+                                                        <SelectItem value="users">{translations.file.table_user}</SelectItem>
+                                                        <SelectItem value="products">{translations.file.table_product}</SelectItem>
                                                     </SelectContent>
                                                 </Select>
                                             </div>
@@ -424,9 +442,9 @@ export default function Index({auth, roles, translations} : Props) {
                                                 <div className="mt-1 flex justify-center px-6 pt-8 pb-8 border-2 border-gray-100 border-dashed rounded-2xl hover:border-blue-500 transition-all duration-200">
                                                     <div className="space-y-4 text-center">
                                                         <div className="text-gray-500">
-                                                            <p className="text-lg">Kéo thả file vào đây hoặc</p>
+                                                            <p className="text-lg">{translations.file.import_subtitle}</p>
                                                             <label className="mt-2 inline-block px-6 py-3 bg-blue-50 text-blue-600 rounded-xl cursor-pointer hover:bg-blue-100 transition-colors duration-200">
-                                                                <span>Tải file lên</span>
+                                                                <span>{translations.file.import_button}</span>
                                                                 <input
                                                                     type="file"
                                                                     className="sr-only"
@@ -435,7 +453,7 @@ export default function Index({auth, roles, translations} : Props) {
                                                                 />
                                                             </label>
                                                         </div>
-                                                        <p className="text-sm text-gray-400">XLSX, XLS, CSV tối đa 10MB</p>
+                                                        <p className="text-sm text-gray-400">{translations.file.import_file_subtitle}</p>
                                                     </div>
                                                 </div>
                                                 {selectedFileName && (
@@ -452,7 +470,7 @@ export default function Index({auth, roles, translations} : Props) {
                                                     onCheckedChange={(checked) => setCleanImport(checked as boolean)}
                                                     className="text-blue-600 focus:ring-blue-500"
                                                 />
-                                                <label htmlFor="clean-import" className="text-base text-gray-700">Xóa dữ liệu cũ</label>
+                                                <label htmlFor="clean-import" className="text-base text-gray-700">{translations.file.import_clean}</label>
                                             </div>
 
                                             <Button
@@ -471,14 +489,14 @@ export default function Index({auth, roles, translations} : Props) {
                                     <div className="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm hover:shadow-md transition-all duration-200">
                                         <div className="space-y-8">
                                             <div>
-                                                <label className="block text-lg font-medium mb-3 text-gray-900">Chọn bảng</label>
+                                                <label className="block text-sm font-medium mb-2">{translations.file.table}</label>
                                                 <Select value={selectedExport} onValueChange={setSelectedExport}>
                                                     <SelectTrigger className="w-full h-12 text-base border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-xl">
-                                                        <SelectValue placeholder="Chọn bảng" />
+                                                        <SelectValue placeholder={translations.file.table_placeholder} />
                                                     </SelectTrigger>
                                                     <SelectContent>
-                                                        <SelectItem value="users">Users</SelectItem>
-                                                        <SelectItem value="products">Products</SelectItem>
+                                                        <SelectItem value="users">{translations.file.table_user}</SelectItem>
+                                                        <SelectItem value="products">{translations.file.table_product}</SelectItem>
                                                     </SelectContent>
                                                 </Select>
                                             </div>
@@ -545,11 +563,15 @@ export default function Index({auth, roles, translations} : Props) {
                                                                     </td>
                                                                     <td className="px-6 py-4 whitespace-nowrap text-center">
                                                                         <span className={`px-4 py-2 text-sm font-medium rounded-full ${
-                                                                            history.status === 'success' ? 'bg-green-50 text-green-700' :
-                                                                            history.status === 'error' ? 'bg-red-50 text-red-700' :
-                                                                            'bg-yellow-50 text-yellow-700'
+                                                                            history.status === 1 ? 'bg-green-50 text-green-700' :
+                                                                            history.status === 0 ? 'bg-red-50 text-red-700' :
+                                                                            history.status === 2 ? 'bg-yellow-50 text-yellow-700' :
+                                                                            history.status === 3 ? 'bg-blue-50 text-blue-700' : ''
                                                                         }`}>
-                                                                            {history.status}
+                                                                            {history.status === 1 ? 'Success' :
+                                                                             history.status === 0 ? 'Error' :
+                                                                             history.status === 2 ? 'Partial' :
+                                                                             history.status === 3 ? 'On working' : ''}
                                                                         </span>
                                                                     </td>
                                                                     <td className="hidden sm:table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
@@ -560,9 +582,16 @@ export default function Index({auth, roles, translations} : Props) {
                                                                             <Button
                                                                                 size="sm"
                                                                                 onClick={() => handleDownload(history.id)}
-                                                                                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+                                                                                className="w-full sm:w-auto px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm text-center"
                                                                             >
                                                                                 Download
+                                                                            </Button>
+                                                                            <Button
+                                                                                size="sm"
+                                                                                onClick={() => router.visit(`/files/details/${history.id}`)}
+                                                                                className="w-full sm:w-auto px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-sm text-center"
+                                                                            >
+                                                                                Details
                                                                             </Button>
                                                                         </div>
                                                                     </td>

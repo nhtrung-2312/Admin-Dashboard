@@ -6,8 +6,7 @@ return [
     'subtitle' => 'Nhập và xuất dữ liệu của bạn',
     'input_title' => 'Chọn File',
 
-    'table_import' => 'Chọn bảng để nhập',
-    'table_export' => 'Chọn bảng để xuất',
+    'table' => 'Chọn bảng',
     'table_placeholder' => 'Chọn bảng...',
     'table_user' => 'Người dùng',
     'table_product' => 'Sản phẩm',
@@ -32,6 +31,7 @@ return [
     'export_success' => 'Xuất dữ liệu thành công',
     'export_error' => 'Có lỗi xảy ra khi xuất dữ liệu',
 
+    'export_started' => 'Quá trình xuất dữ liệu đã bắt đầu. Bạn sẽ được thông báo khi hoàn tất.',
     'export_status' => 'Trạng thái',
     'export_status_placeholder' => 'Chọn trạng thái...',
     'export_status_online' => 'Đang hoạt động',
@@ -47,6 +47,8 @@ return [
     'export_price_range_min' => 'Giá tối thiểu',
     'export_price_range_max' => 'Giá tối đa',
     'export_price_subtitle' => 'Để trống nếu không cần',
+    'export_file_type_placeholder' => 'Loại dữ liệu',
+
 
     'system_error' => 'Có lỗi xảy ra, thử lại sau.',
     // Common

@@ -15,6 +15,16 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children, user, translations }: MainLayoutProps) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const { flash } = usePage().props as any;
+
+    useEffect(() => {
+        if (flash.success) {
+            toast.success(flash.success);
+        }
+        if (flash.error) {
+            toast.error(flash.error);
+        }
+    }, [flash]);
 
     const handleLogout = async () => {
         try {

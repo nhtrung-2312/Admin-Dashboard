@@ -13,7 +13,7 @@ const LanguageSwitcher = () => {
             try {
                 const response = await axios.get('/api/languages');
                 const availableLocales = response.data.available;
-                
+
                 const formattedLanguages: Record<string, Language> = {};
                 Object.entries(availableLocales).forEach(([name, config]) => {
                     formattedLanguages[name] = {

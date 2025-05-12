@@ -8,6 +8,7 @@ services:
     volumes:
       - .:/var/www/html
       - /var/www/html/node_modules
+      - ./storage:/var/www/html/storage
     networks:
       - app-network
     depends_on:
@@ -66,6 +67,21 @@ services:
       - NODE_ENV=development
     networks:
       - app-network
+
+  queue-worker:
+    build: .
+    container_name: laravel_queue
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    networks:
+      - app-network
+    depends_on:
+      - app
+      - mysql
+    user: "1000:1000"
+    command: php artisan queue:work --verbose --tries=3 --timeout=90
 
 networks:
   app-network:

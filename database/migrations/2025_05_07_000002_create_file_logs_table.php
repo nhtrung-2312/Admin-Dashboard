@@ -14,7 +14,7 @@ return new class extends Migration
             $table->enum('type', ['import', 'export']);
             $table->string('table_name');
             $table->integer('total_records')->default(0);
-            $table->enum('status', ['success', 'failed', 'partial'])->default('success');
+            $table->unsignedTinyInteger('status')->default(1)->comment('0: Error, 1: Success, 2: Partial, 3: On Working');
             $table->unsignedBigInteger('user_id')->nullable();
             $table->timestamps();
         });

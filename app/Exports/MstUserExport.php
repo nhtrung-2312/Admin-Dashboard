@@ -15,6 +15,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 class MstUserExport implements FromCollection, WithHeadings, WithMapping, WithStyles, WithColumnWidths, WithCustomCsvSettings
 {
     protected $users;
+    protected $index = 0;
 
     public function __construct($users)
     {
@@ -29,7 +30,7 @@ class MstUserExport implements FromCollection, WithHeadings, WithMapping, WithSt
     public function headings(): array
     {
         return [
-            'ID',
+            'No.',
             'Name',
             'Email',
             'Role',
@@ -41,8 +42,9 @@ class MstUserExport implements FromCollection, WithHeadings, WithMapping, WithSt
 
     public function map($user): array
     {
+        $this->index++;
         return [
-            $user->id,
+            $this->index,
             $user->name,
             $user->email,
             $user->group_role,

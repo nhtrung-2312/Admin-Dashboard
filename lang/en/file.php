@@ -6,8 +6,7 @@ return [
     'subtitle' => 'Import and export your data',
     'input_title' => 'Choose File',
 
-    'table_import' => 'Choose table to import',
-    'table_export' => 'Choose table to export',
+    'table' => 'Table',
     'table_placeholder' => 'Choose table...',
     'table_user' => 'Users',
     'table_product' => 'Products',
@@ -15,7 +14,8 @@ return [
     // Import section
     'import_title' => 'Import Data',
     'import_description' => 'Upload Excel or CSV file to import data into the system',
-    'import_button' => 'Choose file to import',
+    'import_subtitle' => 'Drag and drop your file or',
+    'import_button' => 'Upload file',
     'import_success' => 'Data imported successfully',
     'import_error' => 'Error occurred while importing data',
     'import_file_subtitle' => 'Only .xlsx, .xls, .csv file. Max: 10MB.',
@@ -32,6 +32,7 @@ return [
     'export_success' => 'Data exported successfully',
     'export_error' => 'Error occurred while exporting data',
 
+    'export_started' => 'Export started. You’ll be notified once it’s ready.',
     'export_status' => 'Status',
     'export_status_placeholder' => 'Select status...',
     'export_status_online' => 'Active',
@@ -47,6 +48,7 @@ return [
     'export_price_range_min' => 'Minimum Price',
     'export_price_range_max' => 'Maximum Price',
     'export_price_subtitle' => 'Leave empty if no price filter',
+    'export_file_type_placeholder' => 'File type',
 
     //System
     'system_error' => 'An error occurred, please try again.',
