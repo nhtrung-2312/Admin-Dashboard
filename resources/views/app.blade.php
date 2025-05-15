@@ -3,6 +3,8 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script src="https://apis.google.com/js/platform.js" async defer></script>
+        <meta name="google-signin-client_id" content="486592955390-71a7aqi81s6m7rug6tvmdh6vge08ut8i.apps.googleusercontent.com">
         <link rel="icon" href="{{ asset('icon.png') }}" type="image/png">
 
         {{-- Inline script to detect system dark mode preference and apply it immediately --}}

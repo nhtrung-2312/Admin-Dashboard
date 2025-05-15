@@ -13,7 +13,7 @@ services:
       - app-network
     depends_on:
       - mysql
-    user: "1000:1000"
+    user: "${UID:-1000}:${GID:-1000}"
 
   # Nginx Service
   nginx:
@@ -80,7 +80,7 @@ services:
     depends_on:
       - app
       - mysql
-    user: "1000:1000"
+    user: "${UID:-1000}:${GID:-1000}"
     command: php artisan queue:work --verbose --tries=3 --timeout=90
 
 networks:

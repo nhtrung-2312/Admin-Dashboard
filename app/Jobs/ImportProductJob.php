@@ -47,15 +47,11 @@ class ImportProductJob implements ShouldQueue
             $totalRows = $import->getRowCount();
             $failedRows = $import->failures()->count();
 
-            // Cập nhật status dựa trên kết quả import
             if ($failedRows === $totalRows) {
-                // Tất cả các dòng đều thất bại
                 $status = 0; // Error
             } elseif ($failedRows === 0) {
-                // Tất cả các dòng đều thành công
                 $status = 1; // Success
             } else {
-                // Một số dòng thành công, một số dòng thất bại
                 $status = 2; // Partial
             }
 

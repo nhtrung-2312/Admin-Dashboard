@@ -41,13 +41,23 @@ RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
 # Tạo thư mục làm việc
 WORKDIR /var/www/html
 
+# Tạo user với UID và GID phù hợp
+ARG USER_ID=1000
+ARG GROUP_ID=1000
+
+RUN groupadd -g ${GROUP_ID} appuser && \
+    useradd -u ${USER_ID} -g appuser -s /bin/bash -m appuser
+
 # Tạo các thư mục cần thiết và cấp quyền
 RUN mkdir -p /var/www/html/storage/framework/{sessions,views,cache} \
     && mkdir -p /var/www/html/storage/framework/cache/laravel-excel \
     && mkdir -p /var/www/html/storage/logs \
     && mkdir -p /var/www/html/bootstrap/cache \
-    && chown -R www-data:www-data /var/www/html \
+    && mkdir -p /.composer/cache \
+    && chown -R appuser:appuser /var/www/html \
+    && chown -R appuser:appuser /.composer \
     && chmod -R 775 /var/www/html/storage \
-    && chmod -R 775 /var/www/html/bootstrap/cache
+    && chmod -R 775 /var/www/html/bootstrap/cache \
+    && chmod -R 775 /.composer
 
-USER www-data
+USER appuser

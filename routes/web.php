@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\ProductApi;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\FileApi;
 use App\Http\Controllers\Api\FileLogApi;
+use App\Http\Controllers\Api\GCPApi;
 use App\Http\Controllers\Api\PermissionApi;
 use App\Http\Controllers\Api\RoleApi;
 use App\Http\Controllers\FileController;
@@ -94,6 +95,8 @@ Route::prefix('api')->name('api.')->middleware(['jwt'])->group(function () {
             'available' => config('app.available_locales')
         ]);
     });
+
+    Route::get('/search', [GCPApi::class, 'search']);
 });
 
 // Inertia Routes

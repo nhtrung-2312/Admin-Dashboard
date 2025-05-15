@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Events\NotifyEvent;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -71,8 +72,13 @@ class ExportProductJob implements ShouldQueue
 
             DB::commit();
 
+            broadcast(new NotifyEvent('Successfully export products', 'success'));
+
         } catch (\Exception $e) {
             DB::rollBack();
+
+            broadcast(new NotifyEvent('Product export failed', 'failed'));
+
             Log::error('Export product error: ' . $e->getMessage());
 
             $this->fileLog->update([

@@ -6,6 +6,7 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import { usePage } from '@inertiajs/react';
+import Pusher from 'pusher-js';
 
 interface MainLayoutProps {
     children: React.ReactNode;
@@ -16,6 +17,24 @@ interface MainLayoutProps {
 export default function MainLayout({ children, user, translations }: MainLayoutProps) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const { flash } = usePage().props as any;
+
+    Pusher.logToConsole = true;
+
+    const pusher = new Pusher('fe95ea79e77bdc5b6a83', {
+        cluster: 'ap1',
+        forceTLS: true,
+    });
+
+    const channel = pusher.subscribe('notify-event');
+
+    channel.bind('notify-message', function (data: any) {
+        console.log('Received notification:', data);
+        if (data.status === 'success') {
+            toast.success(data.message);
+        } else {
+            toast.error(data.message);
+        }
+    });
 
     useEffect(() => {
         if (flash.success) {

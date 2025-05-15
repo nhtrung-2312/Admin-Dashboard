@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'gcp' => [
+        'project_id' => env('GCP_PROJECT_ID'),
+        'location' => env('GCP_LOCATION'),
+        'catalog_id' => env('GCP_CATALOG_ID'),
+        'branch_id' => env('GCP_BRANCH_ID'),
+    ],
 ];

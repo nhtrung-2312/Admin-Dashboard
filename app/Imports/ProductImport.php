@@ -31,7 +31,7 @@ class ProductImport implements ToModel, WithValidation, WithHeadingRow, SkipsOnE
 
         try {
             $product = new Product([
-                'id' => $row['id'],
+                'id' => $this->generateNewId($row['name']),
                 'name' => $row['name'],
                 'description' => $row['description'],
                 'price' => $row['price'],
@@ -62,7 +62,6 @@ class ProductImport implements ToModel, WithValidation, WithHeadingRow, SkipsOnE
     public function rules(): array
     {
         return [
-            'id' => 'required|string|unique:product,id',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
@@ -71,5 +70,26 @@ class ProductImport implements ToModel, WithValidation, WithHeadingRow, SkipsOnE
             'deleted_at' => 'nullable|date',
             'status' => 'required|string',
         ];
+    }
+
+    private function generateNewId($name)
+    {
+        //Keep the character base on regex, remove the rest
+        $validateName = preg_replace('/[^a-zA-Z]/', '', $name);
+
+        //Get the first letter, default on 'X'
+        $first = strtoupper($validateName[0] ?? 'X');
+
+        //Find the product_id match the first letter, then get the last number
+        $usedNumbers = Product::where('id', 'like', "{$first}%")
+            ->pluck('id')
+            ->map(fn($id) => (int) substr($id, 1))
+            ->sort()
+            ->values();
+
+        //Create id with correct format
+        $newId = $first . str_pad($usedNumbers, 8, '0', STR_PAD_LEFT);
+
+        return $newId;
     }
 }
