@@ -18,23 +18,31 @@ export default function MainLayout({ children, user, translations }: MainLayoutP
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const { flash } = usePage().props as any;
 
-    Pusher.logToConsole = true;
+    useEffect(() => {
+        Pusher.logToConsole = true;
 
-    const pusher = new Pusher('fe95ea79e77bdc5b6a83', {
-        cluster: 'ap1',
-        forceTLS: true,
-    });
+        const pusher = new Pusher('fe95ea79e77bdc5b6a83', {
+            cluster: 'ap1',
+            forceTLS: true,
+        });
 
-    const channel = pusher.subscribe('notify-event');
+        const channel = pusher.subscribe('notify-event');
 
-    channel.bind('notify-message', function (data: any) {
-        console.log('Received notification:', data);
-        if (data.status === 'success') {
-            toast.success(data.message);
-        } else {
-            toast.error(data.message);
-        }
-    });
+        channel.bind('notify-message', function (data: any) {
+            console.log('Received notification:', data);
+            if (data.status === 'success') {
+                toast.success(data.message);
+            } else {
+                toast.error(data.message);
+            }
+        });
+
+        return () => {
+            channel.unbind_all();
+            channel.unsubscribe();
+            pusher.disconnect();
+        };
+    }, []);
 
     useEffect(() => {
         if (flash.success) {

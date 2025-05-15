@@ -136,8 +136,10 @@ class ProductApi extends Controller
             ->sort()
             ->values();
 
+        $nextNumber = ($usedNumbers->last() ?? 0) + 1;
+
         //Create id with correct format
-        $newId = $first . str_pad($usedNumbers, 8, '0', STR_PAD_LEFT);
+        $newId = $first . str_pad($nextNumber, 8, '0', STR_PAD_LEFT);
 
         return $newId;
     }

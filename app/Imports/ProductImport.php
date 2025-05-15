@@ -1,19 +1,20 @@
 <?php
-
 namespace App\Imports;
 
 use App\Models\Product;
-use Maatwebsite\Excel\Concerns\ToModel;
+use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\SkipsErrors;
 use Maatwebsite\Excel\Concerns\SkipsFailures;
 use Maatwebsite\Excel\Concerns\SkipsOnError;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
-class ProductImport implements ToModel, WithValidation, WithHeadingRow, SkipsOnError, SkipsOnFailure
+class ProductImport implements ToCollection, WithValidation, WithHeadingRow, SkipsOnError, SkipsOnFailure
 {
     use SkipsErrors, SkipsFailures;
 
@@ -25,27 +26,32 @@ class ProductImport implements ToModel, WithValidation, WithHeadingRow, SkipsOnE
 
     private $rowNumber = 0;
 
-    public function model(array $row)
+    // Lưu trữ số cuối cùng đã dùng theo chữ cái đầu
+    private $idCounters = [];
+
+    public function collection(Collection $rows)
     {
-        $this->rowNumber++;
+        foreach ($rows as $row) {
+            $this->rowNumber++;
 
-        try {
-            $product = new Product([
-                'id' => $this->generateNewId($row['name']),
-                'name' => $row['name'],
-                'description' => $row['description'],
-                'price' => $row['price'],
-                'quantity' => $row['quantity'],
-                'image_url' => $row['image'],
-                'is_deleted' => isset($row['deleted_at']) ? $row['deleted_at']->format('d/m/Y H:i:s') : '',
-                'status' => $this->statusMap[strtolower($row['status'])] ?? 0,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ]);
-            return $product;
+            $newId = $this->generateNewId($row['name']);
 
-        } catch (\Exception $e) {
-            throw $e;
+            try {
+                Product::create([
+                    'id' => $newId,
+                    'name' => $row['name'],
+                    'description' => $row['description'],
+                    'price' => $row['price'],
+                    'quantity' => $row['quantity'],
+                    'image_url' => $row['image'],
+                    'is_deleted' => isset($row['deleted_at']) ? Carbon::parse($row['deleted_at'])->format('d/m/Y H:i:s') : '',
+                    'status' => $this->statusMap[strtolower($row['status'])] ?? 0,
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now(),
+                ]);
+            } catch (\Exception $e) {
+                throw $e;
+            }
         }
     }
 
@@ -74,21 +80,26 @@ class ProductImport implements ToModel, WithValidation, WithHeadingRow, SkipsOnE
 
     private function generateNewId($name)
     {
-        //Keep the character base on regex, remove the rest
         $validateName = preg_replace('/[^a-zA-Z]/', '', $name);
 
-        //Get the first letter, default on 'X'
         $first = strtoupper($validateName[0] ?? 'X');
 
-        //Find the product_id match the first letter, then get the last number
-        $usedNumbers = Product::where('id', 'like', "{$first}%")
-            ->pluck('id')
-            ->map(fn($id) => (int) substr($id, 1))
-            ->sort()
-            ->values();
+        if (!isset($this->idCounters[$first])) {
+            $lastProduct = Product::where('id', 'LIKE', $first . '%')
+                            ->orderBy('id', 'desc')
+                            ->first();
 
-        //Create id with correct format
-        $newId = $first . str_pad($usedNumbers, 8, '0', STR_PAD_LEFT);
+            if ($lastProduct) {
+                $numberPart = (int)substr($lastProduct->id, 1);
+                $this->idCounters[$first] = $numberPart + 1;
+            } else {
+                $this->idCounters[$first] = 1;
+            }
+        }
+
+        // Tạo ID mới
+        $nextNumber = $this->idCounters[$first]++;
+        $newId = $first . str_pad($nextNumber, 8, '0', STR_PAD_LEFT);
 
         return $newId;
     }
