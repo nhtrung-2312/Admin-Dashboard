@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Events\NotifyEvent;
 use App\Imports\ProductImport;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -47,14 +48,6 @@ class ImportProductJob implements ShouldQueue
             $totalRows = $import->getRowCount();
             $failedRows = $import->failures()->count();
 
-            if ($failedRows === $totalRows) {
-                $status = 0; // Error
-            } elseif ($failedRows === 0) {
-                $status = 1; // Success
-            } else {
-                $status = 2; // Partial
-            }
-
             // Lưu thông tin lỗi nếu có
             if ($import->failures()->isNotEmpty()) {
                 $errorMap = [];
@@ -77,6 +70,17 @@ class ImportProductJob implements ShouldQueue
                         'error_message' => implode(', ', $messages),
                     ]);
                 }
+            }
+
+            if ($failedRows === $totalRows) {
+                $status = 0; // Error
+                broadcast(new NotifyEvent(__('file.import_error'), 'error'));
+            } elseif ($failedRows === 0) {
+                $status = 1; // Success
+                broadcast(new NotifyEvent(__('file.import_success'), 'success'));
+            } else {
+                $status = 2; // Partial
+                broadcast(new NotifyEvent(__('file.import_partial'), 'warning'));
             }
 
             DB::commit();

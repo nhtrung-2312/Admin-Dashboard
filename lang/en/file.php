@@ -24,6 +24,7 @@ return [
     'import_file_mimes' => 'File must be in the format: xlsx, xls, csv.',
     'import_table_required' => 'Table is required.',
     'import_table_string' => 'Table name must be a string.',
+    'import_partial' => 'Not fully imported, please check details.',
 
     // Export section
     'export_title' => 'Export Data',

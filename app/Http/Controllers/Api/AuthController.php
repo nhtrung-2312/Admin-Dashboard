@@ -27,6 +27,13 @@ class AuthController extends Controller
             //Check for remember me checkbox
             $remember = $request->boolean('remember', false);
 
+            if ($remember) {
+                JWTAuth::factory()->setTTL(60 * 24 * 7);
+            } else {
+                JWTAuth::factory()->setTTL(60);
+            }
+
+
             //Create key for RateLimiter
             $ipAddress = $request->ip();
             $key = 'login:' . $ipAddress;
@@ -120,20 +127,33 @@ class AuthController extends Controller
     public function me()
     {
         $user = Auth::guard('api')->user();
-        $ttl = JWTAuth::factory()->getTTL();
-        $issuedAt = JWTAuth::getPayload()->get('iat');
+        $payload = JWTAuth::getPayload();
 
-        $expiresIn = ($issuedAt + ($ttl * 60)) - time();
+        $expiresAt = $payload->get('exp');
+        $expiresIn = $expiresAt - time();
 
         return response()->json([
             'status' => 'success',
-            'expires_in' => $expiresIn,
+            'expires_in' => $this->formatDuration($expiresIn),
             'user' => [
                 'name' => $user->name,
                 'role' => $user->group_role,
                 'is_active' => $user->is_active
             ],
         ]);
+    }
+
+    private function formatDuration($seconds) {
+        $days = floor($seconds / 86400);
+        $seconds %= 86400;
+
+        $hours = floor($seconds / 3600);
+        $seconds %= 3600;
+
+        $minutes = floor($seconds / 60);
+        $seconds %= 60;
+
+        return sprintf('%dd %02dh %02dm %02ds', $days, $hours, $minutes, $seconds);
     }
 
     protected function respondWithToken($token)

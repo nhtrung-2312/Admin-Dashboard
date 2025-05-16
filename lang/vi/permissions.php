@@ -22,6 +22,11 @@ return [
     "edit_roles" => "Chỉnh sửa vai trò",
     "delete_roles" => "Xóa vai trò",
 
+    "view_files" => "Xem danh sách tệp",
+    "import_files" => "Nhập tệp",
+    "export_files" => "Xuất tệp",
+    "download_files" => "Tải xuống tệp",
+
     "view_permissions" => "Xem danh sách quyền",
     "create_permissions" => "Thêm quyền",
     "edit_permissions" => "Chỉnh sửa quyền",

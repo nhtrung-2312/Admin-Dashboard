@@ -271,30 +271,16 @@ export default function Index({ auth, translations }: Props) {
     }, [currentPage, perPage, filters]);
 
     return (
-    <> 
+    <>
         <Head title={translations.product.head_title}></Head>
-        
         <MainLayout user={auth.user} translations={translations.nav}>
-            <ToastContainer
-                position="top-right"
-                autoClose={1000}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme="light"
-                transition={Bounce}
-            />
             <div className="py-12">
                 <div className="max-w-4/5 mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900">
                             <div className="flex justify-between items-center mb-6">
                                 <div>
-                                    <h2 className="text-2xl font-semibold">{translations.product.list_title}</h2>
+                                    <h2 className="text-2xl font-bold">{translations.product.list_title}</h2>
                                     <p className="text-sm text-gray-500 mt-1">{translations.product.list_subtitle}</p>
                                 </div>
                                 <Button
@@ -460,7 +446,7 @@ export default function Index({ auth, translations }: Props) {
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <div className="group relative">
-                                                            <span 
+                                                            <span
                                                                 className="text-sm font-medium text-gray-900 hover:text-blue-600 cursor-pointer"
                                                                 onClick={() => product.image_url && setSelectedImage(`/uploads/${product.image_url}`)}
                                                             >
@@ -469,7 +455,7 @@ export default function Index({ auth, translations }: Props) {
                                                             <div className="absolute left-0 top-full mt-2 hidden group-hover:block z-10">
                                                                 <div className="bg-white p-2 rounded-lg shadow-lg border border-gray-200">
                                                                     {product.image_url ? (
-                                                                        <img 
+                                                                        <img
                                                                             src={`/uploads/${product.image_url}`}
                                                                             alt={product.name}
                                                                             className="w-40 h-40 object-cover rounded"
@@ -493,7 +479,7 @@ export default function Index({ auth, translations }: Props) {
                                                         {product.price.toLocaleString('vi-VN')} VNĐ
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
-                                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                                        <span className={`px-2 inline-flex text-xs leading-5 font-bold rounded-full ${
                                                             product.status === 1
                                                                 ? 'bg-green-100 text-green-800'
                                                                 : product.status === 0
@@ -530,12 +516,12 @@ export default function Index({ auth, translations }: Props) {
                                         </tbody>
                                     </table>
                                 </div>
-                            )}  
+                            )}
                         </div>
                     </div>
                 </div>
             </div>
-            <EditProductModal 
+            <EditProductModal
                 isOpen={isEditModalOpen}
                 onClose={() => setIsEditModalOpen(false)}
                 product={selectedProduct}
@@ -546,17 +532,17 @@ export default function Index({ auth, translations }: Props) {
 
         {/* Modal hiển thị hình ảnh phóng to */}
         {selectedImage && (
-            <div 
+            <div
                 className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
                 onClick={() => setSelectedImage(null)}
             >
                 <div className="relative max-w-4xl w-full max-h-[90vh] flex items-center justify-center">
-                    <img 
-                        src={selectedImage} 
-                        alt="Hình ảnh sản phẩm" 
+                    <img
+                        src={selectedImage}
+                        alt="Hình ảnh sản phẩm"
                         className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-xl"
                     />
-                    <button 
+                    <button
                         className="absolute top-4 right-4 bg-white text-gray-800 rounded-full p-2 hover:bg-gray-200 transition-colors"
                         onClick={() => setSelectedImage(null)}
                     >

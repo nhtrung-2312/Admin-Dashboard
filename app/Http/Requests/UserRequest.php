@@ -23,7 +23,7 @@ class UserRequest extends FormRequest
     public function rules(): array
     {
         $rules = [
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|regex:/^[\p{L}\p{M}0-9\s\.\'\-]+$/u',
             'is_active' => 'required|boolean',
             'group_role' => 'required|string',
         ];
@@ -31,7 +31,7 @@ class UserRequest extends FormRequest
         // Nếu là request update
         if ($this->isMethod('put') || $this->isMethod('patch')) {
             $userId = $this->route('user')->id;
-            
+
             // Chỉ validate email nếu email mới khác với email cũ
             if ($this->input('email') !== $this->route('user')->email) {
                 $rules['email'] = [
@@ -52,6 +52,7 @@ class UserRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'name.regex' => __('validation.regex', ['attribute' => __('user.create_name')]),
             'name.required' => __('validation.required', ['attribute' => __('user.create_name')]),
             'name.string' => __('validation.string', ['attribute' => __('user.create_name')]),
             'name.max' => __('validation.max.string', ['attribute' => __('user.create_name'), 'max' => 255]),

@@ -23,7 +23,7 @@ return [
     'import_file_mimes' => 'File phải ở định dạng: xlsx, xls, csv.',
     'import_table_required' => 'Bảng là bắt buộc.',
     'import_table_string' => 'Tên bảng phải là một chuỗi.',
-
+    'import_partial' => 'Nhập không hoàn tất, vui lòng kiểm tra chi tiết.',
     // Export section
     'export_title' => 'Xuất dữ liệu',
     'export_description' => 'Tải xuống dữ liệu của bạn dưới dạng file Excel',

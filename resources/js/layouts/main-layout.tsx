@@ -1,11 +1,11 @@
 import { Link, router } from '@inertiajs/react';
-import { Button } from '@/components/ui/button';
 import { User } from '@/types';
 import { useEffect, useState } from 'react';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import { usePage } from '@inertiajs/react';
+import usePusher from '@/hooks/initPusher';
 import Pusher from 'pusher-js';
 
 interface MainLayoutProps {
@@ -16,42 +16,8 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children, user, translations }: MainLayoutProps) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const { flash } = usePage().props as any;
-
-    useEffect(() => {
-        Pusher.logToConsole = true;
-
-        const pusher = new Pusher('fe95ea79e77bdc5b6a83', {
-            cluster: 'ap1',
-            forceTLS: true,
-        });
-
-        const channel = pusher.subscribe('notify-event');
-
-        channel.bind('notify-message', function (data: any) {
-            console.log('Received notification:', data);
-            if (data.status === 'success') {
-                toast.success(data.message);
-            } else {
-                toast.error(data.message);
-            }
-        });
-
-        return () => {
-            channel.unbind_all();
-            channel.unsubscribe();
-            pusher.disconnect();
-        };
-    }, []);
-
-    useEffect(() => {
-        if (flash.success) {
-            toast.success(flash.success);
-        }
-        if (flash.error) {
-            toast.error(flash.error);
-        }
-    }, [flash]);
+    axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    usePusher();
 
     const handleLogout = async () => {
         try {
@@ -63,7 +29,6 @@ export default function MainLayout({ children, user, translations }: MainLayoutP
             });
 
             router.visit('/login');
-
         } catch (error: any) {
             console.error(translations.auth.error);
         }
@@ -71,6 +36,18 @@ export default function MainLayout({ children, user, translations }: MainLayoutP
 
     return (
         <>
+        <ToastContainer
+            position="top-right"
+            autoClose={1500}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="light"
+        />
         <div className="min-h-screen bg-gray-100">
             <nav className="bg-white border-b border-gray-200">
                 <div className="max-w-4/5 mx-auto px-4 sm:px-6 lg:px-8">

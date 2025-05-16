@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 return [
     "head_title" => "Quản lý người dùng",
@@ -12,6 +12,7 @@ return [
     "create_status" => "Trạng thái",
     "create_group" => "Chức vụ",
     "create_button" => "Thêm người dùng",
+    "loading_button" => "Đang tải...",
 
     "list_title" => "Danh sách người dùng",
     "list_subtitle" => "Danh sách toàn bộ người dùng",
@@ -47,6 +48,7 @@ return [
     "table_item_button_delete" => "Xoá",
     "table_isloading" => "Đang tải...",
     "table_no_data" => "Không có dữ liệu",
+    "table_no_data_subtitle" => "Không có sản phẩm nào phù hợp với điều kiện",
 
     "system_create_success" => "Tạo người dùng mới thành công.",
     "system_create_error" => "Đã xảy ra lỗi khi tạo người dùng",

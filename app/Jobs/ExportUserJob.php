@@ -66,7 +66,7 @@ class ExportUserJob implements ShouldQueue
 
             DB::commit();
 
-            broadcast(new NotifyEvent('Successfully export products', 'success'));
+            broadcast(new NotifyEvent(__('file.export_success'), 'success'));
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -82,10 +82,9 @@ class ExportUserJob implements ShouldQueue
                 'error_message' => $e->getMessage()
             ]);
 
-            // Xóa file nếu có lỗi
-            if (Storage::exists($this->filePath)) {
-                Storage::delete($this->filePath);
-            }
+            broadcast(new NotifyEvent(__('file.export_error'), 'error'));
+
+
         }
     }
 

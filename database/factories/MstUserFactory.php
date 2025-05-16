@@ -13,13 +13,13 @@ class MstUserFactory extends Factory
 
     public function definition(): array
     {
-        $roles = \DB::table('roles')->pluck('name')->toArray();
+        // $roles = \DB::table('roles')->pluck('name')->toArray();
         $email = fake()->unique()->safeEmail();
         return [
             'name' => fake()->name(),
             'email' => $email,
             'password' => Hash::make(Str::before($email, '@')),
-            'group_role' => fake()->randomElement($roles),
+            'group_role' => fake()->randomElement('admin'),
             'is_active' => fake()->boolean(),
             'is_delete' => false,
             'last_login_at' => fake()->dateTimeBetween('-1 year', 'now'),

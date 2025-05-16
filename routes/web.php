@@ -100,7 +100,7 @@ Route::prefix('api')->name('api.')->middleware(['jwt'])->group(function () {
 });
 
 // Inertia Routes
-Route::middleware(['jwt'])->group(function () {
+Route::middleware(['web', 'jwt'])->group(function () {
     Route::prefix('/')->group(function () {
         Route::get('/', [HomeController::class, 'index'])->name('home');
     });
@@ -136,4 +136,9 @@ Route::middleware(['jwt'])->group(function () {
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'login'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->name('auth.login');
+});
+
+Route::get('/test', function () {
+    broadcast(new \App\Events\NotifyEvent('Test broadcast event', 'success'));
+    return response()->json(['message' => 'Event broadcasted successfully!']);
 });

@@ -100,7 +100,6 @@ export default function Index({ auth, translations } : Props) {
     return (
         <>
         <Head title={translations.permissions.list_title} />
-
         <MainLayout translations={translations.nav} user={auth.user}>
             <div className="py-12">
                 <div className="max-w-4/5 mx-auto sm:px-6 lg:px-8">

@@ -45,6 +45,8 @@ interface PaginationMeta {
 
 export default function Index({ auth, translations, permissions }: Props) {
     // States
+    const searchParams = new URLSearchParams(window.location.search);
+
     const [roles, setRoles] = useState<Role[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
@@ -124,29 +126,14 @@ export default function Index({ auth, translations, permissions }: Props) {
     return (
         <>
             <Head title={translations.role.head_title} />
-
             <MainLayout user={auth.user} translations={translations.nav}>
-                <ToastContainer
-                    position="top-right"
-                    autoClose={1200}
-                    hideProgressBar={false}
-                    newestOnTop={false}
-                    closeOnClick
-                    rtl={false}
-                    pauseOnFocusLoss
-                    draggable
-                    pauseOnHover
-                    theme="light"
-                    transition={Bounce}
-                />
-
                 <div className="py-12">
                     <div className="max-w-4/5 mx-auto sm:px-6 lg:px-8">
                         <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                             <div className="p-6 text-gray-900">
                                 <section>
                                     <div className="mb-6">
-                                        <h2 className="text-2xl font-semibold">{translations.role.list_title}</h2>
+                                        <h2 className="text-2xl font-bold">{translations.role.list_title}</h2>
                                         <p className="text-sm text-gray-500 mt-1">{translations.role.list_subtitle}</p>
                                     </div>
 

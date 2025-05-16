@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Events\NotifyEvent;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -49,18 +50,6 @@ class ImportUserJob implements ShouldQueue
 
             Log::info($totalRows . ' - ' . $failedRows);
 
-            // Cập nhật status dựa trên kết quả import
-            if ($failedRows === $totalRows) {
-                // Tất cả các dòng đều thất bại
-                $status = 0; // Error
-            } elseif ($failedRows === 0) {
-                // Tất cả các dòng đều thành công
-                $status = 1; // Success
-            } else {
-                // Một số dòng thành công, một số dòng thất bại
-                $status = 2; // Partial
-            }
-
             // Lưu thông tin lỗi nếu có
             if ($import->failures()->isNotEmpty()) {
                 $errorMap = [];
@@ -84,6 +73,17 @@ class ImportUserJob implements ShouldQueue
                         'error_message' => implode(' - ', $messages),
                     ]);
                 }
+            }
+
+            if ($failedRows === $totalRows) {
+                $status = 0; // Error
+                broadcast(new NotifyEvent(__('file.import_error'), 'error'));
+            } elseif ($failedRows === 0) {
+                $status = 1; // Success
+                broadcast(new NotifyEvent(__('file.import_success'), 'success'));
+            } else {
+                $status = 2; // Partial
+                broadcast(new NotifyEvent(__('file.import_partial'), 'warning'));
             }
 
             DB::commit();

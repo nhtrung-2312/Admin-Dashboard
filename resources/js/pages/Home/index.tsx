@@ -300,28 +300,14 @@ export default function Index({ auth, translations, roles }: Props) {
     return (
         <>
         <Head title={translations.user.head_title} />
-
         <MainLayout translations={translations.nav} user={auth.user}>
-            <ToastContainer
-                position="top-right"
-                autoClose={1000}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme="light"
-                transition={Bounce}
-            />
             <div className="py-12">
                 <div className="max-w-4/5 mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900">
                             <section hidden={!auth.user.permissions.includes("create_users")} className="border-b border-gray-200 mb-6">
                                 <div className="mb-6">
-                                    <h2 className="text-2xl font-semibold">{translations.user.create_title}</h2>
+                                    <h2 className="text-2xl font-bold">{translations.user.create_title}</h2>
                                     <p className="text-sm text-gray-500 mt-1">{translations.user.create_subtitle}</p>
                                 </div>
 
@@ -405,7 +391,7 @@ export default function Index({ auth, translations, roles }: Props) {
                                             disabled={isCreating}
                                             className="bg-lime-500 hover:bg-lime-600"
                                         >
-                                            {isCreating ? 'Đang tạo...' : translations.user.create_button}
+                                            {isCreating ? translations.user.loading_button : translations.user.create_button}
                                         </Button>
                                     </div>
                                 </form>
@@ -413,7 +399,7 @@ export default function Index({ auth, translations, roles }: Props) {
 
                             <section>
                                 <div className="mb-6">
-                                    <h2 className="text-2xl font-semibold">{translations.user.list_title}</h2>
+                                    <h2 className="text-2xl font-bold">{translations.user.list_title}</h2>
                                     <p className="text-sm text-gray-500 mt-1">{translations.user.list_subtitle}</p>
                                 </div>
                                 {meta && (
@@ -476,7 +462,7 @@ export default function Index({ auth, translations, roles }: Props) {
                                             className="bg-gray-500 hover:bg-gray-600 text-white"
                                             disabled={isLoading}
                                         >
-                                            {isLoading ? 'Đang tải...' : translations.user.list_filter_button_reset}
+                                            {isLoading ? translations.user.loading_button : translations.user.list_filter_button_reset}
                                         </Button>
                                         <Button
                                             onClick={handleSearch}
@@ -491,9 +477,24 @@ export default function Index({ auth, translations, roles }: Props) {
                                 {isLoading ? (
                                     <div className="text-center py-4">{translations.user.table_isloading}</div>
                                 ) : users.length === 0 ? (
-                                    <div className="text-center py-4">
-                                        {translations.user.table_no_data}
+                                    <div className="text-center py-8">
+                                    <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <h3 className="mt-2 text-sm font-medium text-gray-900">{translations.user.table_no_data}</h3>
+                                    <p className="mt-1 text-sm text-gray-500">{translations.user.table_no_data_subtitle}</p>
+                                    <div className="mt-6">
+                                        <button
+                                            onClick={handleReset}
+                                            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                        >
+                                            <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+                                            </svg>
+                                            {translations.user.list_filter_button_reset}
+                                        </button>
                                     </div>
+                                </div>
                                 ) : (
                                     <>
                                         <div className="overflow-x-auto">
@@ -551,7 +552,7 @@ export default function Index({ auth, translations, roles }: Props) {
                                                                         onClick={() => handleDelete(user.id)}
                                                                         disabled={!auth.user.permissions.includes("delete_users") || isDeleting}
                                                                     >
-                                                                        {isDeleting ? 'Đang xóa...' : translations.user.table_item_button_delete}
+                                                                        {isDeleting ? translations.user.loading_button : translations.user.table_item_button_delete}
                                                                     </Button>
                                                                 </div>
                                                             </td>

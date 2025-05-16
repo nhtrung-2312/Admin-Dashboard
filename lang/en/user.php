@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 return [
     "head_title" => "User Management",
@@ -12,6 +12,7 @@ return [
     "create_status" => "Status",
     "create_group" => "Group",
     "create_button" => "Add",
+    "loading_button" => "Loading...",
 
     "list_title" => "User List",
     "list_subtitle" => "Showing all the users",
@@ -37,6 +38,7 @@ return [
     "table_item_button_delete" => "Delete",
     "table_isloading" => "Loading...",
     "table_no_data" => "No data available",
+    "table_no_data_subtitle" => "No products match the conditions",
 
     "update_title" => "Update user information",
     "update_name" => "Name",

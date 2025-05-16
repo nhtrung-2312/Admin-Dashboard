@@ -26,6 +26,10 @@ class RoleSeeder extends Seeder
             'create_roles',
             'edit_roles',
             'delete_roles',
+            'view_files',
+            'export_files',
+            'import_files',
+            'download_files',
         ];
         foreach ($permissions as $permission) {
             Permission::create(['name' => $permission, 'guard_name' => 'api']);

@@ -360,18 +360,6 @@ export default function Index({auth, roles, translations} : Props) {
         <>
             <Head title={translations.file.head_title} />
             <MainLayout translations={translations.nav} user={auth.user}>
-                <ToastContainer
-                    position="top-right"
-                    autoClose={1500}
-                    hideProgressBar={false}
-                    newestOnTop={false}
-                    closeOnClick
-                    rtl={false}
-                    pauseOnFocusLoss
-                    draggable
-                    pauseOnHover
-                    theme="light"
-                />
                 <div className="py-12">
                     <div className="max-w-4/5 mx-auto sm:px-6 lg:px-8">
                         <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">

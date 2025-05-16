@@ -26,6 +26,11 @@ return [
     "create_permissions" => "Add permission",
     "edit_permissions" => "Edit permission",
     "delete_permissions" => "Delete permission",
+
+    "view_files" => "View file list",
+    "import_files" => "Import file",
+    "export_files" => "Export file",
+    "download_files" => "Download file",
 //----------------------------------------------------------------------
 
     "list_title" => "Personal Permissions",

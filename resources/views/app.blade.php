@@ -3,6 +3,8 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
+
         <script src="https://apis.google.com/js/platform.js" async defer></script>
         <meta name="google-signin-client_id" content="486592955390-71a7aqi81s6m7rug6tvmdh6vge08ut8i.apps.googleusercontent.com">
         <link rel="icon" href="{{ asset('icon.png') }}" type="image/png">
@@ -35,11 +37,10 @@
 
         <title inertia>{{ config('app.name') }}</title>
 
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
+        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
         @routes
         @viteReactRefresh
-        @vite(['resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
+        @vite(['resources/js/app.tsx', 'resources/css/app.css'])
         @inertiaHead
     </head>
     <body class="font-sans antialiased">
