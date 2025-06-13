@@ -10,13 +10,48 @@ use Illuminate\Support\Facades\Storage;
 
 class FileLogApi extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $fileLogs = FileLog::with('user')->orderBy('created_at', 'desc')->get();
-        return response()->json([
-            'status' => 'success',
-            'data' => $fileLogs
-        ], 200);
+        try {
+            $query = FileLog::query();
+
+            if ($request->has('search')) {
+                $query->where('file_name', 'like', '%' . $request->input('search') . '%');
+            }
+
+            // Thêm các filter khác
+            if ($request->has('status')) {
+                $status = $request->input('status');
+                $query->where('status', $status);
+            }
+
+            $query->orderBy('updated_at', 'desc');
+
+            // Step 7: Paginate the results (default by 10)
+            $perPage = $request->input('per_page', 10);
+            $products = $query->paginate($perPage)->withQueryString();
+
+            // Step 8: Return the response
+            return response()->json([
+                'data' => $products->items(),
+                'meta' => [
+                    'current_page' => $products->currentPage(),
+                    'from' => $products->firstItem() ?? 0,
+                    'last_page' => $products->lastPage(),
+                    'links' => $products->linkCollection()->toArray(),
+                    'path' => $products->path(),
+                    'per_page' => $products->perPage(),
+                    'to' => $products->lastItem() ?? 0,
+                    'total' => $products->total(),
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            Log::error('Error when trying to access log page: . ', $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => __('product.system_fetch_error')
+            ], 500);
+        }
     }
 
     public function download($id)

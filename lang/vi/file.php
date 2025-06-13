@@ -50,6 +50,24 @@ return [
     'export_file_type_placeholder' => 'Loại dữ liệu',
 
 
+    'log_search' => 'Tìm kiếm',
+    'log_search_placeholder' => 'Nhập tên file...',
+    'log_type' => 'Loại hành động',
+    'log_type_placeholder' => 'Chọn loại hành động',
+    'log_type_all' => 'Tất cả',
+    'log_type_import' => 'Nhập',
+    'log_type_export' => 'Xuất',
+    'log_status' => 'Trạng thái',
+    'log_status_placeholder' => 'Chọn trạng thái',
+    'log_status_all' => 'Tất cả',
+    'log_status_success' => 'Thành công',
+    'log_status_partial' => 'Một phần',
+    'log_status_error' => 'Lỗi',
+    'log_date_range' => 'Khoảng thời gian',
+    'log_reset' => 'Đặt lại',
+    'log_search_button' => 'Tìm kiếm',
+
+
     'system_error' => 'Có lỗi xảy ra, thử lại sau.',
     // Common
     'loading' => 'Đang xử lý...',

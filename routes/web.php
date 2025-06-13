@@ -72,9 +72,13 @@ Route::prefix('api')->name('api.')->middleware(['jwt'])->group(function () {
     });
 
     // File routes
-    Route::prefix('files')->group(function () {
-        Route::post('/import', [FileApi::class, 'import'])->name('file.import');
-        Route::post('/export', [FileApi::class, 'export'])->name('file.export');
+    Route::prefix('files')->middleware(['permission:view_files'])->group(function () {
+        Route::middleware(['permission:import_files'])->group(function () {
+            Route::post('/import', [FileApi::class, 'import'])->name('file.import');
+        });
+        Route::middleware(['permission:export_files'])->group(function () {
+            Route::post('/export', [FileApi::class, 'export'])->name('file.export');
+        });
 
         Route::prefix('log')->group(function() {
             Route::get('/', [FileLogApi::class, 'index'])->name('file.log');
@@ -84,7 +88,7 @@ Route::prefix('api')->name('api.')->middleware(['jwt'])->group(function () {
             Route::get('/', [FileLogApi::class, 'index'])->name('file.details');
         });
 
-        Route::get('/download/{id}', [FileLogApi::class, 'download'])->name('file.download');
+        Route::get('/download/{id}', [FileLogApi::class, 'download'])->name('file.download')->middleware(['permission:download_files']);
     });
 
 
@@ -136,9 +140,4 @@ Route::middleware(['web', 'jwt'])->group(function () {
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'login'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->name('auth.login');
-});
-
-Route::get('/test', function () {
-    broadcast(new \App\Events\NotifyEvent('Test broadcast event', 'success'));
-    return response()->json(['message' => 'Event broadcasted successfully!']);
 });

@@ -12,7 +12,7 @@ class RoleController extends Controller
     {
         $permissions = Permission::pluck('name');
         return Inertia::render('Roles/index', [
-            'filters' => $request->only(['search', 'status', 'priceFrom', 'priceTo', 'per_page', 'page']),
+            'filters' => $request->only(['search', 'per_page', 'page']),
             'translations' => [
                 'nav' => __('nav'),
                 'role' => __('role'),

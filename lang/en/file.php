@@ -51,6 +51,24 @@ return [
     'export_price_subtitle' => 'Leave empty if no price filter',
     'export_file_type_placeholder' => 'File type',
 
+    //Log
+    'log_search' => 'Search',
+    'log_search_placeholder' => 'Enter file name...',
+    'log_type' => 'Action Type',
+    'log_type_placeholder' => 'Select action type',
+    'log_type_all' => 'All',
+    'log_type_import' => 'Import',
+    'log_type_export' => 'Export',
+    'log_status' => 'Status',
+    'log_status_placeholder' => 'Select status',
+    'log_status_all' => 'All',
+    'log_status_success' => 'Success',
+    'log_status_partial' => 'Partial',
+    'log_status_error' => 'Error',
+    'log_date_range' => 'Date Range',
+    'log_reset' => 'Reset',
+    'log_search_button' => 'Search',
+
     //System
     'system_error' => 'An error occurred, please try again.',
 

@@ -8,13 +8,17 @@ return [
 
     "create_button" => "Add Role",
     "search_placeholder" => "Search by role name",
-    
+    "search_button" => "Search",
+    "reset_button" => "Refresh",
+
     "table_no" => "No.",
     "table_name" => "Role Name",
     "table_permissions" => "Permissions",
     "table_action" => "Action",
     "table_item_button_edit" => "Edit",
     "table_item_button_delete" => "Delete",
+    "table_no_data" => "No data available",
+    "table_no_data_subtitle" => "No products match the conditions",
 
     "system_delete_confirm" => "Are you sure you want to delete this role?",
     "system_delete_success" => "Role deleted successfully!",
@@ -29,7 +33,7 @@ return [
     "system_update_success" => "Role updated successfully!",
     "system_update_error" => "An error occurred while updating the role.",
     "system_update_missing" => "Please fill in all required fields.",
-    
+
     "system_form_not_found" => "An error occurred, cannot find this role.",
 
     "system_delete_is_system" => "Cannot delete system roles!",

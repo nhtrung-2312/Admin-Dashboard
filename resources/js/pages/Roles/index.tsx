@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import MainLayout from '@/layouts/main-layout';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
@@ -44,27 +44,82 @@ interface PaginationMeta {
 }
 
 export default function Index({ auth, translations, permissions }: Props) {
-    // States
     const searchParams = new URLSearchParams(window.location.search);
 
+    // States
     const [roles, setRoles] = useState<Role[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [perPage, setPerPage] = useState(10);
+    const [currentPage, setCurrentPage] = useState(Number(searchParams.get('page')) || 1);
+    const [perPage, setPerPage] = useState(Number(searchParams.get('per_page')) || 10);
     const [meta, setMeta] = useState<PaginationMeta | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingRole, setEditingRole] = useState<Role | null>(null);
-    const [searchTerm, setSearchTerm] = useState('');
+    const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
+    const [tempSearchTerm, setTempSearchTerm] = useState(searchParams.get('search') || '');
     const groupedPermissions: Record<string, string[]> = {};
+
+    useEffect(() => {
+        const newSearchParams = new URLSearchParams(window.location.search);
+        setSearchTerm(newSearchParams.get('search') || '');
+        setTempSearchTerm(newSearchParams.get('search') || '');
+        setCurrentPage(Number(newSearchParams.get('page')) || 1);
+        setPerPage(Number(newSearchParams.get('per_page')) || 10);
+    }, [window.location.search]);
+
+    const updateUrlAndFetch = (params: Record<string, any>) => {
+        const filteredParams = Object.entries(params).reduce((acc, [key, value]) => {
+            if (value !== null && value !== undefined && value !== '') {
+                acc[key] = value;
+            }
+            return acc;
+        }, {} as Record<string, any>);
+
+        router.get(window.location.pathname, filteredParams, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true
+        });
+    };
 
     // Handlers
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
+        updateUrlAndFetch({
+            page,
+            per_page: perPage,
+            search: searchTerm || null
+        });
     };
 
     const handlePerPageChange = (newPerPage: number) => {
         setPerPage(newPerPage);
         setCurrentPage(1);
+        updateUrlAndFetch({
+            page: 1,
+            per_page: newPerPage,
+            search: searchTerm || null
+        });
+    };
+
+    const handleSearch = () => {
+        setSearchTerm(tempSearchTerm);
+        setCurrentPage(1);
+        updateUrlAndFetch({
+            page: 1,
+            per_page: perPage,
+            search: tempSearchTerm || null
+        });
+    };
+
+    const handleReset = () => {
+        setTempSearchTerm('');
+        setSearchTerm('');
+        setCurrentPage(1);
+        setPerPage(10);
+        updateUrlAndFetch({
+            page: 1,
+            per_page: 10
+        });
     };
 
     const handleEdit = (role: Role) => {
@@ -132,30 +187,52 @@ export default function Index({ auth, translations, permissions }: Props) {
                         <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                             <div className="p-6 text-gray-900">
                                 <section>
-                                    <div className="mb-6">
-                                        <h2 className="text-2xl font-bold">{translations.role.list_title}</h2>
-                                        <p className="text-sm text-gray-500 mt-1">{translations.role.list_subtitle}</p>
-                                    </div>
-
-                                    {/* Search and Filter */}
-                                    <div className="mb-4 flex items-center justify-between">
-                                        <input
-                                            type="text"
-                                            placeholder={translations.role.search_placeholder}
-                                            value={searchTerm}
-                                            onChange={(e) => setSearchTerm(e.target.value)}
-                                            className="flex-1 max-w-[300px] px-3 py-2 border border-gray-300 rounded-md"
-                                            disabled={!auth.user.permissions.includes('view_roles')}
-                                            hidden={!auth.user.permissions.includes('view_roles')}
-                                        />
+                                    <div className="mb-6 flex justify-between items-center">
+                                        <div>
+                                            <h2 className="text-2xl font-bold">{translations.role.list_title}</h2>
+                                            <p className="text-sm text-gray-500 mt-1">{translations.role.list_subtitle}</p>
+                                        </div>
                                         <Button
                                             onClick={() => setIsEditModalOpen(true)}
-                                            className="ml-4 bg-lime-500 hover:bg-lime-600"
+                                            className="ml-4 bg-emerald-900 hover:bg-emerald-950 text-white"
                                             disabled={!auth.user.permissions.includes('create_roles')}
                                             hidden={!auth.user.permissions.includes('create_roles')}
                                         >
                                             {translations.role.create_button}
                                         </Button>
+                                    </div>
+
+                                    {/* Search and Filter */}
+                                    <div className="mb-4 flex items-center justify-between">
+                                        <div className="w-[300px]">
+                                            <input
+                                                type="text"
+                                                placeholder={translations.role.search_placeholder}
+                                                value={tempSearchTerm}
+                                                onChange={(e) => setTempSearchTerm(e.target.value)}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                                disabled={!auth.user.permissions.includes('view_roles')}
+                                                hidden={!auth.user.permissions.includes('view_roles')}
+                                            />
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <Button
+                                                onClick={handleSearch}
+                                                className="bg-blue-500 hover:bg-blue-600 text-white"
+                                                disabled={!auth.user.permissions.includes('view_roles')}
+                                                hidden={!auth.user.permissions.includes('view_roles')}
+                                            >
+                                                {translations.role.search_button}
+                                            </Button>
+                                            <Button
+                                                onClick={handleReset}
+                                                className="bg-gray-700 hover:bg-gray-800 text-white"
+                                                disabled={!auth.user.permissions.includes('view_roles')}
+                                                hidden={!auth.user.permissions.includes('view_roles')}
+                                            >
+                                                {translations.role.reset_button}
+                                            </Button>
+                                        </div>
                                     </div>
 
                                     {/* Pagination */}
@@ -177,9 +254,29 @@ export default function Index({ auth, translations, permissions }: Props) {
 
                                     {/* Table */}
                                     {(isLoading && auth.user.permissions.includes('view_roles')) ?  (
-                                        <div className="text-center py-4">{translations.role.table_isloading}</div>
+                                        <div className="text-center py-4">
+                                            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                                            <p className="mt-2 text-gray-600">{translations.role.table_isloading}</p>
+                                        </div>
                                     ) : roles.length === 0 ? (
-                                        <div className="text-center py-4">{translations.role.table_no_data}</div>
+                                        <div className="text-center py-8">
+                                            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            <h3 className="mt-2 text-sm font-medium text-gray-900">{translations.role.table_no_data}</h3>
+                                            <p className="mt-1 text-sm text-gray-500">{translations.role.table_no_data_subtitle}</p>
+                                            <div className="mt-6">
+                                                <button
+                                                    onClick={handleReset}
+                                                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                                >
+                                                    <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+                                                    </svg>
+                                                    {translations.role.reset_button}
+                                                </button>
+                                            </div>
+                                        </div>
                                     ) : (
                                         <div className="overflow-x-auto">
                                             <div className="inline-block min-w-full align-middle">

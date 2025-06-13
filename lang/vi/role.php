@@ -1,13 +1,15 @@
-<?php 
+<?php
 
 return [
     "head_title" => "Quản lý Chức vụ",
-    
+
     "list_title" => "Danh sách Chức vụ",
     "list_subtitle" => "Quản lý các chức vụ trong hệ thống",
 
     "create_button" => "Thêm Chức vụ",
     "search_placeholder" => "Tìm kiếm theo tên chức vụ",
+    "search_button" => "Tìm kiếm",
+    "reset_button" => "Làm mới",
 
     "table_no" => "STT",
     "table_name" => "Tên Chức vụ",
@@ -15,6 +17,8 @@ return [
     "table_action" => "Hành động",
     "table_item_button_edit" => "Sửa",
     "table_item_button_delete" => "Xóa",
+    "table_no_data" => "Không có dữ liệu",
+    "table_no_data_subtitle" => "Không có sản phẩm nào phù hợp với điều kiện tìm kiếm.",
 
     "system_delete_confirm" => "Bạn có chắc chắn muốn xóa chức vụ này?",
     "system_delete_success" => "Xóa chức vụ thành công!",

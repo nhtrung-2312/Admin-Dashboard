@@ -3,13 +3,15 @@ import MainLayout from '@/layouts/main-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Head, router } from '@inertiajs/react';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/ReactToastify.css';
 import axios from 'axios';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Transgender } from "lucide-react";
+import TablePagination from '@/components/TablePagination';
+import useDebounce from '@/hooks/useDebounce';
 
 interface Props {
     auth: {
@@ -52,8 +54,32 @@ interface FileHistory {
     created_at: string;
 }
 
+interface LogFilters {
+    search: string;
+    start_date: string;
+    end_date: string;
+    type: string;
+    status: string;
+}
+
+interface PaginationMeta {
+    current_page: number;
+    from: number;
+    last_page: number;
+    links: Array<{
+        url: string | null;
+        label: string;
+        active: boolean;
+    }>;
+    path: string;
+    per_page: number;
+    to: number;
+    total: number;
+}
+
 export default function Index({auth, roles, translations} : Props) {
     const [isLoading, setIsLoading] = useState(false);
+    const [isSearching, setIsSearching] = useState(false);
     const [selectedExport, setSelectedExport] = useState<string>('');
     const [selectedImport, setSelectedImport] = useState<string>('');
     const [cleanImport, setCleanImport] = useState(false);
@@ -83,7 +109,145 @@ export default function Index({auth, roles, translations} : Props) {
     const [histories, setHistories] = useState<FileHistory[]>([]);
     const [activeTab, setActiveTab] = useState('import');
 
+    const searchParams = new URLSearchParams(window.location.search);
+
+    const [logFilters, setLogFilters] = useState<LogFilters>({
+        search: searchParams.get('search') || '',
+        start_date: searchParams.get('start_date') || '',
+        end_date: searchParams.get('end_date') || '',
+        type: searchParams.get('type') || 'all',
+        status: searchParams.get('status') || 'all'
+    });
+
+    const [tempLogFilters, setTempLogFilters] = useState<LogFilters>({
+        search: searchParams.get('search') || '',
+        start_date: searchParams.get('start_date') || '',
+        end_date: searchParams.get('end_date') || '',
+        type: searchParams.get('type') || 'all',
+        status: searchParams.get('status') || 'all'
+    });
+
+    const [currentPage, setCurrentPage] = useState(Number(searchParams.get('page')) || 1);
+    const [perPage, setPerPage] = useState(Number(searchParams.get('per_page')) || 10);
+    const [meta, setMeta] = useState<PaginationMeta | null>(null);
+
+    const debouncedSearch = useDebounce(tempLogFilters.search, 500);
+
+    useEffect(() => {
+        const newSearchParams = new URLSearchParams(window.location.search);
+        setLogFilters({
+            search: newSearchParams.get('search') || '',
+            start_date: newSearchParams.get('start_date') || '',
+            end_date: newSearchParams.get('end_date') || '',
+            type: newSearchParams.get('type') || 'all',
+            status: newSearchParams.get('status') || 'all'
+        });
+        setTempLogFilters({
+            search: newSearchParams.get('search') || '',
+            start_date: newSearchParams.get('start_date') || '',
+            end_date: newSearchParams.get('end_date') || '',
+            type: newSearchParams.get('type') || 'all',
+            status: newSearchParams.get('status') || 'all'
+        });
+        setCurrentPage(Number(newSearchParams.get('page')) || 1);
+        setPerPage(Number(newSearchParams.get('per_page')) || 10);
+    }, [window.location.search]);
+
+    useEffect(() => {
+        if (activeTab === 'history') {
+            handleLogSearch();
+        }
+    }, [debouncedSearch]);
+
+    const updateUrlAndFetch = (params: Record<string, any>) => {
+        const filteredParams = Object.entries(params).reduce((acc, [key, value]) => {
+            if (value !== null && value !== undefined && value !== '') {
+                acc[key] = value;
+            }
+            return acc;
+        }, {} as Record<string, any>);
+
+        router.get(window.location.pathname, filteredParams, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true
+        });
+    };
+
+    const handleLogFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setTempLogFilters(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleLogSearch = () => {
+        setIsSearching(true);
+        setLogFilters(tempLogFilters);
+        setCurrentPage(1);
+        updateUrlAndFetch({
+            page: 1,
+            per_page: perPage,
+            search: tempLogFilters.search,
+            start_date: tempLogFilters.start_date,
+            end_date: tempLogFilters.end_date,
+            type: tempLogFilters.type,
+            status: tempLogFilters.status
+        });
+    };
+
+    const handleLogReset = () => {
+        const resetFilters = {
+            search: '',
+            start_date: '',
+            end_date: '',
+            type: 'all',
+            status: 'all'
+        };
+        setTempLogFilters(resetFilters);
+        setLogFilters(resetFilters);
+        setCurrentPage(1);
+        setPerPage(10);
+        updateUrlAndFetch({
+            page: 1,
+            per_page: 10
+        });
+    };
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+        updateUrlAndFetch({
+            page,
+            per_page: perPage,
+            search: logFilters.search,
+            start_date: logFilters.start_date,
+            end_date: logFilters.end_date,
+            type: logFilters.type,
+            status: logFilters.status
+        });
+    };
+
+    const handlePerPageChange = (newPerPage: number) => {
+        setPerPage(newPerPage);
+        setCurrentPage(1);
+        updateUrlAndFetch({
+            page: 1,
+            per_page: newPerPage,
+            search: logFilters.search,
+            start_date: logFilters.start_date,
+            end_date: logFilters.end_date,
+            type: logFilters.type,
+            status: logFilters.status
+        });
+    };
+
     const handleImport = async () => {
+        if (!auth.user.permissions.includes('import_files')) {
+            toast.error('Bạn không có quyền thực hiện chức năng này');
+            return;
+        }
+
         if (!selectedImport || !selectedFile) {
             toast.error('Vui lòng chọn bảng và file!');
             return;
@@ -132,6 +296,11 @@ export default function Index({auth, roles, translations} : Props) {
     };
 
     const handleExport = async () => {
+        if (!auth.user.permissions.includes('export_files')) {
+            toast.error('Bạn không có quyền thực hiện chức năng này');
+            return;
+        }
+
         setIsLoading(true);
 
         try {
@@ -324,19 +493,43 @@ export default function Index({auth, roles, translations} : Props) {
     };
 
     const fetchHistories = async () => {
+        if (!auth.user.permissions.includes('view_files')) {
+            toast.error('Bạn không có quyền thực hiện chức năng này');
+            return;
+        }
+
         try {
-            const response = await axios.get('/api/files/log');
+            const response = await axios.get('/api/files/log', {
+                params: {
+                    page: currentPage,
+                    per_page: perPage,
+                    search: logFilters.search,
+                    start_date: logFilters.start_date,
+                    end_date: logFilters.end_date,
+                    type: logFilters.type,
+                    status: logFilters.status
+                }
+            });
             if (!response.data.data || response.data.data.length === 0) {
-                toast.error('Dữ liệu trống!')
+                setHistories([]);
+                setMeta(response.data.meta);
             } else {
                 setHistories(response.data.data);
+                setMeta(response.data.meta);
             }
         } catch (error) {
             toast.error('Không thể tải lịch sử file');
+        } finally {
+            setIsSearching(false);
         }
     };
 
     const handleDownload = async (id: number) => {
+        if (!auth.user.permissions.includes('download_files')) {
+            toast.error('Bạn không có quyền thực hiện chức năng này');
+            return;
+        }
+
         try {
             const response = await axios.get(`/api/files/download/${id}`, {
                 responseType: 'blob'
@@ -379,6 +572,7 @@ export default function Index({auth, roles, translations} : Props) {
                                                 : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                                             }`}
                                             onClick={() => setActiveTab('import')}
+                                            hidden={!auth.user.permissions.includes('import_files')}
                                         >
                                             Import
                                         </button>
@@ -389,6 +583,7 @@ export default function Index({auth, roles, translations} : Props) {
                                                 : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                                             }`}
                                             onClick={() => setActiveTab('export')}
+                                            hidden={!auth.user.permissions.includes('export_files')}
                                         >
                                             Export
                                         </button>
@@ -402,6 +597,7 @@ export default function Index({auth, roles, translations} : Props) {
                                                 setActiveTab('history');
                                                 fetchHistories();
                                             }}
+                                            hidden={!auth.user.permissions.includes('view_files')}
                                         >
                                             Log
                                         </button>
@@ -409,7 +605,7 @@ export default function Index({auth, roles, translations} : Props) {
                                 </div>
 
                                 {/* Import Tab */}
-                                {activeTab === 'import' && (
+                                {activeTab === 'import' && auth.user.permissions.includes('import_files') && (
                                     <div className="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm hover:shadow-md transition-all duration-200">
                                         <div className="space-y-8">
                                             <div>
@@ -473,7 +669,7 @@ export default function Index({auth, roles, translations} : Props) {
                                 )}
 
                                 {/* Export Tab */}
-                                {activeTab === 'export' && (
+                                {activeTab === 'export' && auth.user.permissions.includes('export_files') && (
                                     <div className="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm hover:shadow-md transition-all duration-200">
                                         <div className="space-y-8">
                                             <div>
@@ -503,90 +699,210 @@ export default function Index({auth, roles, translations} : Props) {
                                 )}
 
                                 {/* History Tab */}
-                                {activeTab === 'history' && (
+                                {activeTab === 'history' && auth.user.permissions.includes('view_files') && (
                                     <div className="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm hover:shadow-md transition-all duration-200">
+                                        <div className="mb-6">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                                                <div>
+                                                    <label className="block text-sm font-medium mb-2">{translations.file.log_search}</label>
+                                                    <div className="relative">
+                                                        <Input
+                                                            type="text"
+                                                            name="search"
+                                                            value={tempLogFilters.search}
+                                                            onChange={handleLogFilterChange}
+                                                            placeholder={translations.file.log_search_placeholder}
+                                                            className="w-full pr-10"
+                                                        />
+                                                        {isSearching && (
+                                                            <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                                                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium mb-2">{translations.file.log_type}</label>
+                                                    <Select
+                                                        value={tempLogFilters.type}
+                                                        onValueChange={(value) => setTempLogFilters(prev => ({ ...prev, type: value }))}
+                                                    >
+                                                        <SelectTrigger className="w-full">
+                                                            <SelectValue placeholder={translations.file.log_type_placeholder} />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="all">{translations.file.log_type_all}</SelectItem>
+                                                            <SelectItem value="import">{translations.file.log_type_import}</SelectItem>
+                                                            <SelectItem value="export">{translations.file.log_type_export}</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium mb-2">{translations.file.log_status}</label>
+                                                    <Select
+                                                        value={tempLogFilters.status}
+                                                        onValueChange={(value) => setTempLogFilters(prev => ({ ...prev, status: value }))}
+                                                    >
+                                                        <SelectTrigger className="w-full">
+                                                            <SelectValue placeholder={translations.file.log_status_placeholder} />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="all">{translations.file.log_status_all}</SelectItem>
+                                                            <SelectItem value="1">{translations.file.log_status_success}</SelectItem>
+                                                            <SelectItem value="2">{translations.file.log_status_partial}</SelectItem>
+                                                            <SelectItem value="0">{translations.file.log_status_error}</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium mb-2">{translations.file.log_date_range}</label>
+                                                    <div className="grid grid-cols-2 gap-2">
+                                                        <Input
+                                                            type="date"
+                                                            name="start_date"
+                                                            value={tempLogFilters.start_date}
+                                                            onChange={handleLogFilterChange}
+                                                            className="w-full"
+                                                        />
+                                                        <Input
+                                                            type="date"
+                                                            name="end_date"
+                                                            value={tempLogFilters.end_date}
+                                                            onChange={handleLogFilterChange}
+                                                            className="w-full"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="flex justify-end gap-2">
+                                                <Button
+                                                    onClick={handleLogReset}
+                                                    className="bg-gray-700 hover:bg-gray-800 text-white"
+                                                    disabled={isSearching}
+                                                >
+                                                    {translations.file.log_reset}
+                                                </Button>
+                                                <Button
+                                                    onClick={handleLogSearch}
+                                                    className="bg-blue-500 hover:bg-blue-600 text-white"
+                                                    disabled={isSearching}
+                                                >
+                                                    {translations.file.log_search_button}
+                                                </Button>
+                                            </div>
+                                        </div>
+
+                                        {meta && (
+                                            <div className="mb-4">
+                                                <TablePagination
+                                                    translations={translations.pagination}
+                                                    links={meta.links}
+                                                    from={meta.from}
+                                                    to={meta.to}
+                                                    total={meta.total}
+                                                    perPage={perPage}
+                                                    currentPage={currentPage}
+                                                    onPerPageChange={handlePerPageChange}
+                                                    onPageChange={handlePageChange}
+                                                />
+                                            </div>
+                                        )}
+
                                         <div className="overflow-x-auto -mx-4 sm:mx-0">
                                             <div className="inline-block min-w-full align-middle">
                                                 <div className="overflow-hidden">
-                                                    <table className="min-w-full divide-y divide-gray-200">
-                                                        <thead className="bg-gray-50">
-                                                            <tr>
-                                                                <th scope="col" className="px-6 py-4 text-center text-sm font-semibold text-gray-900">Time</th>
-                                                                <th scope="col" className="px-6 py-4 text-center text-sm font-semibold text-gray-900">File</th>
-                                                                <th scope="col" className="px-6 py-4 text-center text-sm font-semibold text-gray-900">User</th>
-                                                                <th scope="col" className="px-6 py-4 text-center text-sm font-semibold text-gray-900">Type</th>
-                                                                <th scope="col" className="hidden sm:table-cell px-6 py-4 text-center text-sm font-semibold text-gray-900">Table</th>
-                                                                <th scope="col" className="px-6 py-4 text-center text-sm font-semibold text-gray-900">Status</th>
-                                                                <th scope="col" className="hidden sm:table-cell px-6 py-4 text-center text-sm font-semibold text-gray-900">Total Records</th>
-                                                                <th scope="col" className="px-6 py-4 text-center text-sm font-semibold text-gray-900">Action</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody className="bg-white divide-y divide-gray-200">
-                                                            {histories.map((history) => (
-                                                                <tr key={history.id} className="hover:bg-gray-50 transition-colors duration-200">
-                                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                                        {new Date(history.created_at).toLocaleString()}
-                                                                    </td>
-                                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                                        <div className="max-w-[150px] truncate mx-auto" title={history.file_name}>
-                                                                            {history.file_name}
-                                                                        </div>
-                                                                    </td>
-                                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                                        <div className="max-w-[150px] truncate mx-auto">
-                                                                            {history.user.name}
-                                                                        </div>
-                                                                    </td>
-                                                                    <td className="px-6 py-4 whitespace-nowrap text-center">
-                                                                        <span className={`px-4 py-2 text-sm font-medium rounded-full ${
-                                                                            history.type === 'import'
-                                                                            ? 'bg-blue-50 text-blue-700'
-                                                                            : 'bg-green-50 text-green-700'
-                                                                        }`}>
-                                                                            {history.type}
-                                                                        </span>
-                                                                    </td>
-                                                                    <td className="hidden sm:table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                                        {history.table_name}
-                                                                    </td>
-                                                                    <td className="px-6 py-4 whitespace-nowrap text-center">
-                                                                        <span className={`px-4 py-2 text-sm font-medium rounded-full ${
-                                                                            history.status === 1 ? 'bg-green-50 text-green-700' :
-                                                                            history.status === 0 ? 'bg-red-50 text-red-700' :
-                                                                            history.status === 2 ? 'bg-yellow-50 text-yellow-700' :
-                                                                            history.status === 3 ? 'bg-blue-50 text-blue-700' : ''
-                                                                        }`}>
-                                                                            {history.status === 1 ? 'Success' :
-                                                                             history.status === 0 ? 'Error' :
-                                                                             history.status === 2 ? 'Partial' :
-                                                                             history.status === 3 ? 'On working' : ''}
-                                                                        </span>
-                                                                    </td>
-                                                                    <td className="hidden sm:table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                                        {history.total_records}
-                                                                    </td>
-                                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
-                                                                        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 justify-center">
-                                                                            <Button
-                                                                                size="sm"
-                                                                                onClick={() => handleDownload(history.id)}
-                                                                                className="w-full sm:w-auto px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm text-center"
-                                                                            >
-                                                                                Download
-                                                                            </Button>
-                                                                            <Button
-                                                                                size="sm"
-                                                                                onClick={() => router.visit(`/files/details/${history.id}`)}
-                                                                                className="w-full sm:w-auto px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-sm text-center"
-                                                                            >
-                                                                                Details
-                                                                            </Button>
-                                                                        </div>
-                                                                    </td>
+                                                    {isSearching ? (
+                                                        <div className="text-center py-8">
+                                                            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                                                            <p className="mt-2 text-gray-500">Đang tìm kiếm...</p>
+                                                        </div>
+                                                    ) : histories.length === 0 ? (
+                                                        <div className="text-center py-8">
+                                                            <p className="text-gray-500">Không tìm thấy kết quả nào</p>
+                                                        </div>
+                                                    ) : (
+                                                        <table className="min-w-full divide-y divide-gray-200">
+                                                            <thead className="bg-gray-50">
+                                                                <tr>
+                                                                    <th scope="col" className="px-6 py-4 text-center text-sm font-semibold text-gray-900">Time</th>
+                                                                    <th scope="col" className="px-6 py-4 text-center text-sm font-semibold text-gray-900">File</th>
+                                                                    <th scope="col" className="px-6 py-4 text-center text-sm font-semibold text-gray-900">User</th>
+                                                                    <th scope="col" className="px-6 py-4 text-center text-sm font-semibold text-gray-900">Type</th>
+                                                                    <th scope="col" className="hidden sm:table-cell px-6 py-4 text-center text-sm font-semibold text-gray-900">Table</th>
+                                                                    <th scope="col" className="px-6 py-4 text-center text-sm font-semibold text-gray-900">Status</th>
+                                                                    <th scope="col" className="hidden sm:table-cell px-6 py-4 text-center text-sm font-semibold text-gray-900">Total Records</th>
+                                                                    <th scope="col" className="px-6 py-4 text-center text-sm font-semibold text-gray-900">Action</th>
                                                                 </tr>
-                                                            ))}
-                                                        </tbody>
-                                                    </table>
+                                                            </thead>
+                                                            <tbody className="bg-white divide-y divide-gray-200">
+                                                                {histories.map((history) => (
+                                                                    <tr key={history.id} className="hover:bg-gray-50 transition-colors duration-200">
+                                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                                                            {new Date(history.created_at).toLocaleString()}
+                                                                        </td>
+                                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                                                            <div className="max-w-[150px] truncate mx-auto" title={history.file_name}>
+                                                                                {history.file_name}
+                                                                            </div>
+                                                                        </td>
+                                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                                                            <div className="max-w-[150px] truncate mx-auto">
+                                                                                {history.user.name}
+                                                                            </div>
+                                                                        </td>
+                                                                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                                                                            <span className={`px-4 py-2 text-sm font-medium rounded-full ${
+                                                                                history.type === 'import'
+                                                                                ? 'bg-blue-50 text-blue-700'
+                                                                                : 'bg-green-50 text-green-700'
+                                                                            }`}>
+                                                                                {history.type}
+                                                                            </span>
+                                                                        </td>
+                                                                        <td className="hidden sm:table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                                                            {history.table_name}
+                                                                        </td>
+                                                                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                                                                            <span className={`px-4 py-2 text-sm font-medium rounded-full ${
+                                                                                history.status === 1 ? 'bg-green-50 text-green-700' :
+                                                                                    history.status === 0 ? 'bg-red-50 text-red-700' :
+                                                                                    history.status === 2 ? 'bg-yellow-50 text-yellow-700' :
+                                                                                    history.status === 3 ? 'bg-blue-50 text-blue-700' : ''
+                                                                            }`}>
+                                                                                {history.status === 1 ? 'Success' :
+                                                                                 history.status === 0 ? 'Error' :
+                                                                                 history.status === 2 ? 'Partial' :
+                                                                                 history.status === 3 ? 'On working' : ''}
+                                                                            </span>
+                                                                        </td>
+                                                                        <td className="hidden sm:table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                                                                            {history.total_records}
+                                                                        </td>
+                                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+                                                                            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 justify-center">
+                                                                                <Button
+                                                                                    size="sm"
+                                                                                    onClick={() => handleDownload(history.id)}
+                                                                                    className="w-full sm:w-auto px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm text-center"
+                                                                                    hidden={!auth.user.permissions.includes('download_files')}
+                                                                                >
+                                                                                    Download
+                                                                                </Button>
+                                                                                <Button
+                                                                                    size="sm"
+                                                                                    onClick={() => router.visit(`/files/details/${history.id}`)}
+                                                                                    className="w-full sm:w-auto px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-sm text-center"
+                                                                                    hidden={!auth.user.permissions.includes('view_files')}
+                                                                                >
+                                                                                    Details
+                                                                                </Button>
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+                                                                ))}
+                                                            </tbody>
+                                                        </table>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
